@@ -1,0 +1,56 @@
+# Ignore all executables
+*.exe
+*.out
+*.bin
+*.run
+# Ignore object files
+*.o
+# Ignore dynamic libraries
+*.dll
+*.so
+*.dylib
+# Ignore archive files
+*.a
+# Ignore compiled static libraries
+*.lib
+
+# Ignore logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Operating system generated files
+.DS_Store
+Thumbs.db
+
+# Ignore editor and IDE backup files
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+*.sublime*
+*.vscode*
+*.idea/
+*.vs/
+*.netbeans*
+
+# Build folders
+/build/
+/dist/
+/obj/
+
+# Node package directories
+node_modules/
+
+# Python virtual environments
+*.venv
+venv/
+ENV/
+
+# Java class files
+*.class
+
+# Ignore environment files
+.env
+

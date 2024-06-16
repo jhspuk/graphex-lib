@@ -72,10 +72,16 @@ int update(tr<T, Y>* a, uint32_t mode){
 					//lock place group if protection enabled
 					z_deref->pl_lock.lock();
 				}					
-				if (z_deref->data[k.inside_index].type == 0 && z_deref->data[k.inside_index].token == 0){
+				if (z_deref->data[k.inside_index].type == 0 && z_deref->data[k.inside_index].token < 1){
 					//if normal PN and no tokens, increase zero_tokens variable
 					f_zero_tokens++;
+					std::cout << f_zero_tokens << " Here!" << std::endl;
 				}
+				std::cout << k.inside_index << "ii" << std::endl;
+				std::cout << k.outside_index << "oi" << std::endl;
+				std::cout << &a->place_reg[k.outside_index] << "p" << std::endl;
+				std::cout << a->place_reg[k.outside_index]->data.size() << "sp" << std::endl;
+				std::cout << a->place_reg[k.outside_index]->data[k.inside_index].token << "dp" << std::endl;
 				
 			}
 			if(f_zero_tokens == 0){
@@ -83,33 +89,6 @@ int update(tr<T, Y>* a, uint32_t mode){
 				//given there is at least a token for each input
 				//push back index of input for a possible execution
 				e_list.push_back(counter-1);
-				
-				//if no 'zero tokens', increment output
-				for (const auto& k : i){
-					auto z_deref = a->place_reg[k.outside_index];
-					if(z_deref->protection == 1){
-						z_deref->pl_lock.lock();	//lock recursive mutex
-					}
-					if(z_deref->data[k.inside_index].type == 0){
-						//if normal PN type, increment
-						z_deref->data[k.inside_index].token++;
-						
-					}else if(z_deref->data[k.inside_index].type == 1){
-						//if type 1, execute function...
-					}
-				}
-				
-				//if no 'zero tokens', decrement input
-				for (const auto& k : ra){
-					auto z_deref = a->place_reg[k.outside_index];
-					if(z_deref->data[k.inside_index].type == 0){
-						//if normal PN type, decrement
-						z_deref->data[k.inside_index].token--;
-						
-					} else if(z_deref->data[k.inside_index].type == 1){
-						//if type 1, execute function...
-					}
-				}
 				
 			}
 			
@@ -127,6 +106,7 @@ int update(tr<T, Y>* a, uint32_t mode){
 		//process all with no order
 		case 0:
 			for(const auto& i : e_list){
+				std::cout << i << " AAAAAAA" << std::endl;
 				auto p_in = a->data[i];
 				auto p_out = a->data[i+1];
 				

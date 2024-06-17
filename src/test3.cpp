@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdint.h>
 #include <mutex>
+#include <thread>
 
 template <class A, class X>
 struct pl_index{
@@ -75,13 +76,13 @@ int update(tr<T, Y>* a, uint32_t mode){
 				if (z_deref->data[k.inside_index].type == 0 && z_deref->data[k.inside_index].token < 1){
 					//if normal PN and no tokens, increase zero_tokens variable
 					f_zero_tokens++;
-					std::cout << f_zero_tokens << " Here!" << std::endl;
+					//std::cout << f_zero_tokens << " Here!" << std::endl;
 				}
-				std::cout << k.inside_index << "ii" << std::endl;
-				std::cout << k.outside_index << "oi" << std::endl;
-				std::cout << &a->place_reg[k.outside_index] << "p" << std::endl;
-				std::cout << a->place_reg[k.outside_index]->data.size() << "sp" << std::endl;
-				std::cout << a->place_reg[k.outside_index]->data[k.inside_index].token << "dp" << std::endl;
+				//std::cout << k.inside_index << "ii" << std::endl;
+				//std::cout << k.outside_index << "oi" << std::endl;
+				//std::cout << &a->place_reg[k.outside_index] << "p" << std::endl;
+				//std::cout << a->place_reg[k.outside_index]->data.size() << "sp" << std::endl;
+				//std::cout << a->place_reg[k.outside_index]->data[k.inside_index].token << "dp" << std::endl;
 				
 			}
 			if(f_zero_tokens == 0){
@@ -106,7 +107,7 @@ int update(tr<T, Y>* a, uint32_t mode){
 		//process all with no order
 		case 0:
 			for(const auto& i : e_list){
-				std::cout << i << " AAAAAAA" << std::endl;
+				//std::cout << i << " AAAAAAA" << std::endl;
 				auto p_in = a->data[i];
 				auto p_out = a->data[i+1];
 				
@@ -162,6 +163,16 @@ int update(tr<T, Y>* a, uint32_t mode){
     return 0; // success
 }
 
+template <class T, class Y, class C>
+void funUp(tr<T, Y>* a, pl<C> & b){
+	for(int i=0; i<100; i++){
+		for(const auto& v : b.data)
+			std::cout<<v.token<<" ";
+		std::cout<<"num: "<<i<<std::endl;
+		update<pl_index<int,int>, pl_token<int,int>>(a, 0);
+	}
+return;}
+
 int main(){
 
 	tr<pl_index<int,int>,pl_token<int,int>> tr_i;
@@ -172,6 +183,8 @@ int main(){
 	
 	pl_i.data.push_back({0,0});
 	pl_i.data.push_back({0,1});
+	
+	pl_i.protection = 1;
 	
 	tr_i.data.push_back(te);
 	tr_i.data.push_back(ta);
@@ -188,14 +201,25 @@ int main(){
 	        std::cout << "place_reg[" << i << "] is initialized, data size: " << tr_i.place_reg[i]->data.size() << std::endl;
 	    }
 	}
+	
+	
+	std::thread a1(funUp<pl_index<int,int>, pl_token<int,int>, pl_token<int,int>>,&tr_i, std::ref(pl_i));
+	std::thread a2(funUp<pl_index<int,int>, pl_token<int,int>, pl_token<int,int>>,&tr_i, std::ref(pl_i));
+	std::thread a3(funUp<pl_index<int,int>, pl_token<int,int>, pl_token<int,int>>,&tr_i, std::ref(pl_i));
+	
+	a1.join();
+	a2.join();
+	a3.join();
+	
+	std::cout<<"Finished!"<<std::endl;
+	//funUp<pl_index<int,int>, pl_token<int,int>, pl_token<int,int>>(&tr_i, pl_i);
 
-
-	for(int i=0; i<100; i++){
-		for(const auto& i : pl_i.data)
-			std::cout<<i.token<<", ";
-		std::cout<<std::endl;
-		update<pl_index<int,int>, pl_token<int,int>>(&tr_i, 0);
-	}
+	//for(int i=0; i<100; i++){
+		//for(const auto& i : pl_i.data)
+			//std::cout<<i.token<<", ";
+		//std::cout<<std::endl;
+		//update<pl_index<int,int>, pl_token<int,int>>(&tr_i, 0);
+	//}
 
 
 return 0;}

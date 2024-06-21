@@ -29,6 +29,4 @@ Different Petrinets are loaded by different files. This will determine the multi
 
 Then, with the symbols (labels for transitions and places), inputs are attached, in this case function pointers.
 
-With these labels, the separate loaded petrinets can then be combined into one large network (multithreading aspects preserved).
-
-Afterwards, the labels are cleared and removed for memory efficiency.
+With this labels, the separate loaded petrinets can then be combined into one large network (multithreading as)

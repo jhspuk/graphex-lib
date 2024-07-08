@@ -8,7 +8,7 @@
 
 namespace graphex{
 	
-	namespace Petrinet{
+	namespace petrinet{
 		
 		//word associations: pl = place, tr = transition
 		
@@ -59,6 +59,9 @@ namespace graphex{
 			
 			std::vector<PL_TR_link<T_pl_frame, T_tr_index_frame>*> link_reg;
 			
+			//meta description of place group
+			std::vector<std::string> descriptor;
+			
 		};
 		
 		//******Place group END
@@ -81,7 +84,8 @@ namespace graphex{
 			//registry of place groups, pairing index values to pointers
 			std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> place_reg;
 			
-			//
+			//meta description of transition group
+			std::vector<std::string> descriptor;
 			
 		};
 		
@@ -95,7 +99,7 @@ namespace graphex{
 			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_p;
 			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_p;
 			
-			int change;
+			bool change;
 		};
 		
 		//*******Place-Transition link END
@@ -103,6 +107,7 @@ namespace graphex{
 		class Graph{
 			public:
 				Graph();
+				~Graph();
 				
 				void add();
 				void fuse();
@@ -110,10 +115,8 @@ namespace graphex{
 				//methods to read PN as vars, or spur a transition
 				void watch();
 				void prod();
-				
-				
-				
-				void run();
+								
+				void execute(int index);
 			private:
 			
 		};

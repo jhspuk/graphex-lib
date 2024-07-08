@@ -4,7 +4,7 @@
 
 int main(){
 	
-	
+	graphex::petrinet::Graph();
 
 	return 1;
 	

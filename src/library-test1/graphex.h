@@ -54,9 +54,11 @@ namespace graphex{
 		struct PL_header_s{
 			PL_s<T_pl_frame>* body;
 			
+			//mutex/execution control, and also enabling flag
 			std::recursive_mutex pl_lock;
 			bool protection;
 			
+			//registry of place-transition links
 			std::vector<PL_TR_link<T_pl_frame, T_tr_index_frame>*> link_reg;
 			
 			//meta description of place group
@@ -83,6 +85,8 @@ namespace graphex{
 			
 			//registry of place groups, pairing index values to pointers
 			std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> place_reg;
+			//registry of place-transition links
+			std::vector<PL_TR_link<T_pl_frame, T_tr_index_frame>*> link_reg;
 			
 			//meta description of transition group
 			std::vector<std::string> descriptor;
@@ -103,13 +107,13 @@ namespace graphex{
 		};
 		
 		//*******Place-Transition link END
-		
+		template <class T_pl_frame, class T_tr_index_frame>
 		class Graph{
 			public:
 				Graph();
 				~Graph();
 				
-				void add();
+				void add(std::string path);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition
@@ -118,7 +122,8 @@ namespace graphex{
 								
 				void execute(int index);
 			private:
-			
+				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
+				std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg;
 		};
 		
 	}

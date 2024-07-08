@@ -54,3 +54,5 @@ ENV/
 # Ignore environment files
 .env
 
+# Ignore precompiled gch
+*.gch

@@ -46,7 +46,6 @@ namespace graphex{
 			//must have coherent indexes
 			std::vector<T_pl_frame> data;
 			std::vector<std::string> labels;
-			
 		};
 		
 		//place_header -- Metadata about the format of data stored
@@ -74,7 +73,7 @@ namespace graphex{
 		//transition -- holds an array of index_frames and labels
 		template <class T_tr_index_frame>
 		struct TR_s{
-			std::vector<T_tr_index_frame> data;
+			std::vector<std::vector<T_tr_index_frame>> data;
 			std::vector<std::string> labels;
 		};
 		
@@ -113,7 +112,7 @@ namespace graphex{
 				Graph();
 				~Graph();
 				
-				void add(std::string path);
+				void add(std::string path, std::vector<std::tuple<int,int>> prev_pl);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition

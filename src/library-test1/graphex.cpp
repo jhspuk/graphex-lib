@@ -16,7 +16,7 @@ namespace graphex{
 			std::cout<<"Goodbye, world!"<<std::endl;
 		}
 		template <class T_pl_frame, class T_tr_index_frame>
-		void Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<std::tuple<int,int>> prev_pl){
+		void Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
 			std::ifstream file(path);
 			
 			if(!file.is_open()){
@@ -24,8 +24,9 @@ namespace graphex{
 				return;
 			}
 			
-			//lpn lists all transitions in as "dummies"
+			//.lpn lists all transitions in as "dummies"
 			std::unordered_set<std::string> f_tran_list;
+			//ascertain all place labels
 			std::unordered_set<std::string> f_place_list;
 			
 			struct pl_concept{

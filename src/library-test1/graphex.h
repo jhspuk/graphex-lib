@@ -67,7 +67,7 @@ namespace graphex{
 		
 		//******Place group END
 		
-		//*******Transition group --  That which holds place indexes for
+		//******Transition group --  That which holds place indexes for
 		//						  a group of transitions.
 		
 		//transition -- holds an array of index_frames and labels
@@ -92,9 +92,9 @@ namespace graphex{
 			
 		};
 		
-		//*******Transition group END
+		//******Transition group END
 		
-		//*******Place-Transition link -- Where a transition group has
+		//******Place-Transition link -- Where a transition group has
 		//a connection to a place group
 		
 		template <class T_pl_frame, class T_tr_index_frame>
@@ -105,14 +105,30 @@ namespace graphex{
 			bool change;
 		};
 		
-		//*******Place-Transition link END
+		//******Place-Transition link END
+		
+		//******pattern -- specify a label set, its substitution
+		//							and the whitelist of PL groups it can be 
+		//							searched for inside
+		
+		struct pattern{
+			//name of label set
+			std::string name;
+			//substitution to be made
+			std::string sub;
+			//search scope of substitution
+			std::vector whitelist;
+		};
+		
+		//******Substituion-struct END
+		
 		template <class T_pl_frame, class T_tr_index_frame>
 		class Graph{
 			public:
 				Graph();
 				~Graph();
 				
-				void add(std::string path, std::vector<std::tuple<int,int>> prev_pl);
+				void add(std::string path, std::vector<pattern> patterns);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition

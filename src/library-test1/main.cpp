@@ -7,11 +7,10 @@
 int main(){
 	
 	using namespace std;
-	vector<tuple<int,int>> tup;
 	
 	using namespace graphex::petrinet;
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> test;
-	test.add("../../PN-examples/multinet_format.lpn", tup);
+	test.add("../../PN-examples/multinet_format.lpn", std::vector<pattern>{});
 
 	return 1;
 	

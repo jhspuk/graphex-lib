@@ -117,7 +117,7 @@ namespace graphex{
 			//substitution to be made
 			std::string sub;
 			//search scope of substitution
-			std::vector whitelist;
+			std::vector<int> whitelist;
 		};
 		
 		//******Substituion-struct END

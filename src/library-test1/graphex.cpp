@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_set>
+#include <unordered_map>
 #include <tuple>
 
 namespace graphex{
@@ -24,12 +25,19 @@ namespace graphex{
 				return;
 			}
 			
+			struct f_pl_sub{
+				std::string sub_specific;
+				std::vector<int> whitelist;
+			};
+			
 			//.lpn lists all transitions in as "dummies"
 			std::unordered_set<std::string> f_tran_list;
-			//ascertain all place labels
+			//grab all place labels
 			std::unordered_set<std::string> f_place_list;
+			//vector of substituions
+			std::unordered_map<std::string, f_pl_sub> f_sub_list;
 			
-			struct pl_concept{
+			struct f_pl_concept{
 				std::string label;
 				std::vector<std::tuple<int, int, PL_header_s<T_pl_frame, T_tr_index_frame>*>> reg;
 			};
@@ -59,13 +67,29 @@ namespace graphex{
 					if(token.rfind(".",0)==0){flag = 0;}
 					else {
 						if(f_tran_list.find(token) == f_tran_list.end()){
-							std::cout<<"found place: "<<token<<std::endl;
+							
+							f_place_list.insert(token);
+							
+							int s_start = token.rfind("x_"); int s_end = 2;
+							if(s_start==0){
+								s_start = s_end;
+								s_end = token.rfind("_", s_start);
+								std::cout<<"found special place: "<<token.substr(s_start,s_end-s_start)<<std::endl;
+							}
 						}
 					}
 				}
 			}
 			
 			file.seekg(0);
+			
+			std::cout<<"Stating: "<<std::endl;
+			for(auto& i:f_tran_list){
+				std::cout<<i<<std::endl;
+			}
+			for(auto& i:f_place_list){
+				std::cout<<i<<std::endl;
+			}
 			
 			
 		}
@@ -74,8 +98,7 @@ namespace graphex{
 		void dummy_link()
 		{
 			Graph<PL_frame<int,int>,TR_index_frame<int,int>> d1;
-			std::vector<std::tuple<int,int>> dv1;
-			d1.add("d",dv1);
+			d1.add("d",std::vector<pattern>{});
 		}
 
 	}

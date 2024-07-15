@@ -84,6 +84,8 @@ namespace graphex{
 			bool flag3 = 0;
 			bool flag4 = 0;
 			bool flag5 = 0;
+			bool flag5_2 = 0;
+			bool flag6 = 0;
 			
 			while(getline(file,line)){
 				istringstream iss(line);
@@ -215,18 +217,41 @@ namespace graphex{
 						flag5 = 1;
 					}
 				} else if(flag5){
-					cout<<"Final pass:"<<token<<endl;
-					//for each transition, is listed their outputs
-					f_tr_concept* tr = f_tr_map.at(token);
-					f_pl_concept* pl;
-					while(iss >> token){
-						pl = f_pl_map.at(token);
-						tr->inputs.push_back(pl);
-					}
+					
+					g_5_2:
+					if(!flag5_2){
+						cout<<"Final pass:"<<token<<endl;
+						//for each transition, is listed their outputs
+						try{
+							f_tr_concept* tr = f_tr_map.at(token);
+							f_pl_concept* pl;
+							while(iss >> token){
+								pl = f_pl_map.at(token);
+								tr->inputs.push_back(pl);
+							}
+						}catch (const out_of_range& e){
+							flag5_2 = 1;
+							goto g_5_2;
+						}
+					}else{
+						if(token.rfind(".",0)==0){
+							flag5 = 0;
+							flag5_2 = 0;
+							flag6 = 1;
+						}
+						f_tr_concept* tr;
+						f_pl_concept* pl = f_pl_map.at(token);
+						while(iss >> token){
+								tr = f_tr_map.at(token);
+								tr->outputs.push_back(pl);
+						}
+					} 
 					
 					cout<< token;
 					
 					//cout<<tr->label<<endl;
+				} else if(flag6){
+					
 				}
 				
 			}

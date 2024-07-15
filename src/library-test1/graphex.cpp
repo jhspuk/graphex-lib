@@ -83,6 +83,7 @@ namespace graphex{
 			bool flag2 = 0;
 			bool flag3 = 0;
 			bool flag4 = 0;
+			bool flag5 = 0;
 			
 			while(getline(file,line)){
 				istringstream iss(line);
@@ -210,8 +211,22 @@ namespace graphex{
 					}
 				} else if(flag4){
 					if(token == ".graph"){
-						cout<<"Final pass:"<<endl;
+						flag4 = 0;
+						flag5 = 1;
 					}
+				} else if(flag5){
+					cout<<"Final pass:"<<token<<endl;
+					//for each transition, is listed their outputs
+					f_tr_concept* tr = f_tr_map.at(token);
+					f_pl_concept* pl;
+					while(iss >> token){
+						pl = f_pl_map.at(token);
+						tr->inputs.push_back(pl);
+					}
+					
+					cout<< token;
+					
+					//cout<<tr->label<<endl;
 				}
 				
 			}

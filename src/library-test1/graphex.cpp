@@ -38,6 +38,8 @@ namespace graphex{
 				std::string old_label;
 				std::string new_label;
 				
+				std::vector<int> whitelist;
+				
 				//note: 32bit integer used here since file format
 				uint32_t value;
 				
@@ -54,8 +56,101 @@ namespace graphex{
 			};
 			//****** Conceptual struct framework END
 			
+			std::unordered_map<std::string, f_tr_concept*> f_tr_map;
+			std::unordered_map<std::string, f_pl_concept*> f_pl_map;
 			
+			std::string prefix_shared = "x_";
 			
+			using namespace std;
+			
+			string line;
+			bool flag1 = 1;
+			bool flag2 = 0;
+			bool flag3 = 0;
+			
+			while(getline(file,line)){
+				istringstream iss(line);
+				string token;
+				iss >> token;
+				if(flag1){
+					if(token == ".name") {
+						
+					} else if(token == ".dummy"){
+						while(iss >> token){
+							
+							cout<<"found transition: "<<token<<endl; //debug
+							
+							//create a new concept struct and add it to the map
+							//map is there as a more efficient array of concept structs
+							f_tr_map.insert({token, new f_tr_concept{token,{},{}}});
+							
+							cout<<"pointer: "<<f_tr_map.at(token)->label<<endl; //debug
+						}
+					} else if(token == ".graph"){
+						//found graph section of lpn, start graph section routine
+						flag1 = 0;
+						flag2 = 1;
+					}
+				} else if(flag2) {
+					//begin the first pass of graph to populate place structs
+					//simultaneously, parse substitution list where applicable
+					
+					//when .graph section has finished, move onto next routine
+					if(token.rfind(".",0)==0){
+						flag2 = 0;
+						flag3 = 1;
+					} else {
+						//if the line starts with a transition, ditch, since we're
+						//reading in place labels that exist
+						if(f_tr_map.find(token) == f_tr_map.end()){
+							
+							//create new place concept and add it to the map
+							f_pl_concept* current_place_p = new f_pl_concept;
+							f_pl_map.insert({token, current_place_p});
+							
+							//old label is current name
+							current_place_p->old_label = token;
+							
+							int s_start = token.find(prefix_shared,0);
+							int s_end = prefix_shared.length();
+							
+							//if there exists a special prefix for shared memory
+							//then there may exist a valid substitution
+							if(s_start==0){
+								
+								//grab the label set name (between prefix and the next underscore)
+								s_start = s_end;
+								s_end = token.find("_", s_start);
+								std::string label_set_name = token.substr(s_start,s_end-s_start);
+								
+								cout<<"special prefix found!: "<< label_set_name<<endl; //debug
+								//search patterns to find if it belongs to a substitution
+								for(auto& pattern_it : patterns){
+									//test if there is a valid substitution pattern
+									if(pattern_it.name == label_set_name){
+										//replace the label set name with the substitution
+										token.replace(s_start,s_end-s_start+1,pattern_it.sub);
+										//add altered name to the current place concept
+										current_place_p->new_label = token;
+										//add whitelist from pattern to concept
+										current_place_p->whitelist = pattern_it.whitelist;
+									}
+								}
+							}
+							
+							
+							
+							
+							
+							
+							
+							
+						}
+					}
+					
+				}
+				
+			}
 			
 			/*
 			struct f_pl_sub{

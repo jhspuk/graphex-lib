@@ -129,6 +129,8 @@ namespace graphex{
 				~Graph();
 				
 				void add(std::string path, std::vector<pattern> patterns);
+				void add(std::string path, int);
+				void add(std::string path);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition
@@ -137,6 +139,10 @@ namespace graphex{
 								
 				void execute(int index);
 			private:
+			
+				//add overloading base function
+				void add__base(std::string path, std::vector<pattern> patterns);
+				
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
 				std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg;
 		};

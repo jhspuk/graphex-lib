@@ -16,8 +16,16 @@ namespace graphex{
 		Graph<T_pl_frame, T_tr_index_frame>::~Graph(){
 			std::cout<<"Goodbye, world!"<<std::endl;
 		}
+		
 		template <class T_pl_frame, class T_tr_index_frame>
 		void Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
+			add__base(path, patterns);
+		}
+		
+		template<class T_pl_frame, class T_tr_index_frame>
+		void Graph<T_pl_frame, T_tr_index_frame>::add__base(std::string path, std::vector<pattern> patterns){
+			
+			//read file from provided path
 			std::ifstream file(path);
 			
 			if(!file.is_open()){
@@ -25,6 +33,31 @@ namespace graphex{
 				return;
 			}
 			
+			//****** Conceptual struct framework -- used to express exact state of the network
+			struct f_pl_concept{
+				std::string old_label;
+				std::string new_label;
+				
+				//note: 32bit integer used here since file format
+				uint32_t value;
+				
+				bool exists;
+				bool expressed;
+				
+			};
+			
+			struct f_tr_concept{
+				std::string label;
+				std::vector<f_pl_concept*> inputs;
+				std::vector<f_pl_concept*> outputs;
+				
+			};
+			//****** Conceptual struct framework END
+			
+			
+			
+			
+			/*
 			struct f_pl_sub{
 				std::string sub_specific;
 				std::vector<int> whitelist;
@@ -102,7 +135,7 @@ namespace graphex{
 			for(auto& i:f_place_list){
 				std::cout<<i<<std::endl;
 			}
-			
+			*/
 			
 		}
 		

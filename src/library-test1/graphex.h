@@ -131,6 +131,7 @@ namespace graphex{
 				void add(std::string path, std::vector<pattern> patterns);
 				void add(std::string path, int);
 				void add(std::string path);
+				T_tr_index_frame find(std::string search_term, std::vector<int> whitelist);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition

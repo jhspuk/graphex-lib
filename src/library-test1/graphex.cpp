@@ -17,6 +17,21 @@ namespace graphex{
 			std::cout<<"Goodbye, world!"<<std::endl;
 		}
 		
+		template<class T_pl_frame, class T_tr_index_frame>
+		T_tr_index_frame Graph<T_pl_frame, T_tr_index_frame>::find(std::string search_term, std::vector<int> whitelist){
+			//for each specified place group (specified in whitelist)
+			for(auto& mask : whitelist){
+				//scan the body of the place group's labels for a match
+				for(auto& i : pl_reg[mask]->body->labels){
+					//if there's a match, then calculate the exact index
+					if(i==search_term){
+						T_tr_index_frame index_f = {mask,distance(pl_reg[mask]->body->labels.begin(),i)};
+						return index_f;
+					}
+				}
+			}
+		}
+		
 		template <class T_pl_frame, class T_tr_index_frame>
 		void Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
 			add__base(path, patterns);
@@ -67,6 +82,7 @@ namespace graphex{
 			bool flag1 = 1;
 			bool flag2 = 0;
 			bool flag3 = 0;
+			bool flag4 = 0;
 			
 			while(getline(file,line)){
 				istringstream iss(line);
@@ -99,6 +115,8 @@ namespace graphex{
 					if(token.rfind(".",0)==0){
 						flag2 = 0;
 						flag3 = 1;
+						//go back to the beginning of the file for another pass
+						file.seekg(0);
 					} else {
 						//if the line starts with a transition, ditch, since we're
 						//reading in place labels that exist
@@ -134,20 +152,66 @@ namespace graphex{
 										current_place_p->new_label = token;
 										//add whitelist from pattern to concept
 										current_place_p->whitelist = pattern_it.whitelist;
+									} else {
+										//if no match, copy unchanged label
+										current_place_p->new_label = token;
+										current_place_p->whitelist = {};
 									}
 								}
 							}
-							
-							
-							
-							
-							
-							
-							
-							
 						}
 					}
 					
+				} else if(flag3){
+					if(token == ".capacity"){
+						
+					} else if(token == ".marking"){
+						bool first = 1;
+						uint32_t capacity = 0;
+						while(iss >> token){
+							
+							//remove first bracket "{"
+							if(first){
+								token = token.substr(1, token.length());
+								first = 0;
+							}
+							
+							//find if there's an equals sign - this gives a specific
+							//capacity value, otherwise implicit '1'
+							int s_start = 0;
+							int s_end = token.find("=", s_start);
+							if(s_end != -1){
+								
+								//check for end bracket "}" and remove
+								s_start = token.find("}", s_start);
+								if(s_start!=-1){
+									token.erase(s_start,1);
+								}
+								
+								//use position of equals to find number, then convert to integer
+								cout<<token.substr(s_end+1, token.length())<<" : "<<s_end<<endl; //debug
+								capacity = stoi(token.substr(s_end+1, token.length()));
+								
+								cout<<"normals: "<<token.substr(0, s_end+1)<<endl; //debug
+								//find relevant place and set capacity
+								f_pl_map.at(token.substr(0, s_end))->value = capacity;
+								
+							} else {
+								//implicit '1' assumed, set concept capacity to 1
+								f_pl_map.at(token)->value = capacity;
+							}
+							cout<<"Capacity: "<<capacity<<endl; //debug
+						}
+					} else if(token == ".end"){
+						flag3 = 0;
+						flag4 = 1;
+						//go back to the beginning of the file for another pass
+						file.seekg(0);
+					}
+				} else if(flag4){
+					if(token == ".graph"){
+						cout<<"Final pass:"<<endl;
+					}
 				}
 				
 			}

@@ -23,5 +23,5 @@ p6
 p7
 p8
 .capacity x_in2_1=999
-.marking {p3 p8 x_in1_1 x_in1_4 x_in2_1=99}
+.marking {p3 p8 x_in1_1 x_in1_4=3 x_in2_1=99}
 .end

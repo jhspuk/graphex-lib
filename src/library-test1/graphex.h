@@ -120,7 +120,39 @@ namespace graphex{
 			std::vector<int> whitelist;
 		};
 		
-		//******Substituion-struct END
+		//******pattern END
+		
+		//******loader helpers -- abstract form that can be translated to
+		//						an executable form
+		template <class T_tr_index_frame>
+		struct loader_pl_concept{
+			std::string old_label;
+			std::string new_label;
+			
+			std::vector<int> whitelist;
+			
+			//note: 32bit integer used here since file format
+			uint32_t value;
+			
+			//local index
+			T_tr_index_frame index_l;
+			
+			bool exists;
+			bool expressed;
+			
+		};
+		
+		template <class T_tr_index_frame>
+		struct loader_tr_concept{
+			std::string label;
+			std::vector<loader_pl_concept<T_tr_index_frame>*> inputs;
+			std::vector<loader_pl_concept<T_tr_index_frame>*> outputs;
+			
+		};
+		
+		//******loader helpers END
+		
+
 		
 		template <class T_pl_frame, class T_tr_index_frame>
 		class Graph{
@@ -128,10 +160,10 @@ namespace graphex{
 				Graph();
 				~Graph();
 				
-				void add(std::string path, std::vector<pattern> patterns);
-				void add(std::string path, int);
-				void add(std::string path);
-				T_tr_index_frame find(std::string search_term, std::vector<int> whitelist);
+				int add(std::string path, std::vector<pattern> patterns);
+				int add(std::string path, int);
+				int add(std::string path);
+				int find(std::string search_term, std::vector<int> whitelist, T_tr_index_frame&);
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition
@@ -142,7 +174,9 @@ namespace graphex{
 			private:
 			
 				//add overloading base function
-				void add__base(std::string path, std::vector<pattern> patterns);
+				int add__base(std::string path, std::vector<pattern> patterns);
+				int compile(std::vector<loader_pl_concept<T_tr_index_frame>*>, 
+							std::vector<loader_tr_concept<T_tr_index_frame>*>, std::string);
 				
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
 				std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg;

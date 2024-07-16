@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <tuple>
+#include <iterator>
 
 #define DEBUG_BUILD
 
@@ -26,38 +27,109 @@ namespace graphex{
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
-		T_tr_index_frame Graph<T_pl_frame, T_tr_index_frame>::find(std::string search_term, std::vector<int> whitelist){
+		int Graph<T_pl_frame, T_tr_index_frame>::find(std::string search_term, std::vector<int> whitelist, T_tr_index_frame& index_i_f){
+			using namespace std;
 			//for each specified place group (specified in whitelist)
 			for(auto& mask : whitelist){
+				
+				//make sure whitelist is not out of bounds
+				if((int)pl_reg.size() == 0){
+					break;
+				}
+				if(mask > (int)pl_reg.size()-1){
+					cerr<<"Compile error: requesting whitelist search out of bounds!"<<endl;
+					break;
+				}
+				D(cout<<search_term<<" ...searching whitelist in "<<pl_reg.size()<<" many"<<endl;)
 				//scan the body of the place group's labels for a match
+				int count = 0;
 				for(auto& i : pl_reg[mask]->body->labels){
 					//if there's a match, then calculate the exact index
 					if(i==search_term){
-						T_tr_index_frame index_f = {mask,distance(pl_reg[mask]->body->labels.begin(),i)};
-						return index_f;
+						T_tr_index_frame index_f = {mask,count};
+						index_i_f = index_f;
+						return 1;
 					}
+					count++;
 				}
 			}
+			
+			return 0;
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
-		void Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
-			add__base(path, patterns);
+		int Graph<T_pl_frame, T_tr_index_frame>::compile(std::vector<loader_pl_concept<T_tr_index_frame>*> pl_concepts, std::vector<loader_tr_concept<T_tr_index_frame>*> tr_concepts, std::string name_f){
+			
+			using namespace std;
+			//****** DEBUG Section -- print data about loaded concepts
+			#ifdef DEBUG_BUILD
+			cout<<"DEBUG: "<<__func__<<endl;
+			for(auto&i:pl_concepts){
+				cout<<i->old_label<<", "<<i->new_label<<" - capacity: "<<i->value<<endl;
+			}
+			
+			for(auto&i:tr_concepts){
+				cout<<i->label<<" - inputs: ";
+				for(auto&k:i->inputs){
+					cout<<k->new_label<<" ";
+				}
+				cout<<std::endl<<"outputs: ";
+				for(auto&k:i->outputs){
+					cout<<k->new_label<<" ";
+				}
+				cout<<std::endl;
+			}
+			cout<<"DEBUG: "<<__func__<<" END"<<endl;
+			#endif
+			//****** DEBUG Section END
+			//overall index of transition group
+			int tr_index_f;
+			//create a new TR header - there is only ever one per addition
+			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = new TR_header_s<T_pl_frame, T_tr_index_frame>;
+			//add TR header to the register
+			tr_reg.push_back(tr_group_f);
+			//calculate index value of newly copied region
+			tr_index_f = tr_reg.size() - 1;
+			
+			T_tr_index_frame search_result = {0,0};
+			
+			for(auto&i : pl_concepts){
+				//if finding
+				if(find(i->new_label, i->whitelist, search_result)){
+					i->index_l = search_result;
+					i->exists=1;
+				} else {
+					
+					D(cout<<i->new_label<<" does not exist!"<<endl;)
+					i->exists=0;
+				}
+			}
+			
+			
+			
+			D(cout<<"Compile finished"<<endl;)
+			return tr_index_f;
+		}
+		
+		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
+			return add__base(path, patterns);
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
-		void Graph<T_pl_frame, T_tr_index_frame>::add__base(std::string path, std::vector<pattern> patterns){
+		int Graph<T_pl_frame, T_tr_index_frame>::add__base(std::string path, std::vector<pattern> patterns){
 			
 			//read file from provided path
 			std::ifstream file(path);
 			
 			if(!file.is_open()){
 				std::cerr<<"Cannot open file: "<<path<<std::endl;
-				return;
+				return -1;
 			}
 			
 			//****** Conceptual struct framework -- used to express exact state of the network
-			struct f_pl_concept{
+			/*
+			struct loader_pl_concept{
 				std::string old_label;
 				std::string new_label;
 				
@@ -71,22 +143,27 @@ namespace graphex{
 				
 			};
 			
-			struct f_tr_concept{
+			struct loader_tr_concept{
 				std::string label;
-				std::vector<f_pl_concept*> inputs;
-				std::vector<f_pl_concept*> outputs;
+				std::vector<loader_pl_concept*> inputs;
+				std::vector<loader_pl_concept*> outputs;
 				
 			};
 			//****** Conceptual struct framework END
+			*/
 			
-			std::unordered_map<std::string, f_tr_concept*> f_tr_map;
-			std::unordered_map<std::string, f_pl_concept*> f_pl_map;
+			//using loader_pl_concept = loader_pl_concept;
+			//using loader_tr_concept = loader_tr_concept;
+			
+			std::unordered_map<std::string, loader_tr_concept<T_tr_index_frame>*> f_tr_map;
+			std::unordered_map<std::string, loader_pl_concept<T_tr_index_frame>*> f_pl_map;
 			
 			std::string prefix_shared = "x_";
 			
 			using namespace std;
 			
 			string line;
+			string name_f;
 			bool flag1 = 1;
 			bool flag2 = 0;
 			bool flag3 = 0;
@@ -101,7 +178,9 @@ namespace graphex{
 				iss >> token;
 				if(flag1){
 					if(token == ".name") {
-						
+						if(iss >> token){
+							name_f=token;
+						}
 					} else if(token == ".dummy"){
 						while(iss >> token){
 							
@@ -109,7 +188,7 @@ namespace graphex{
 							
 							//create a new concept struct and add it to the map
 							//map is there as a more efficient array of concept structs
-							f_tr_map.insert({token, new f_tr_concept{token,{},{}}});
+							f_tr_map.insert({token, new loader_tr_concept<T_tr_index_frame>{token,{},{}}});
 							
 							cout<<"pointer: "<<f_tr_map.at(token)->label<<endl; //debug
 						}
@@ -134,7 +213,7 @@ namespace graphex{
 						if(f_tr_map.find(token) == f_tr_map.end()){
 							
 							//create new place concept and add it to the map
-							f_pl_concept* current_place_p = new f_pl_concept;
+							loader_pl_concept<T_tr_index_frame>* current_place_p = new loader_pl_concept<T_tr_index_frame>;
 							f_pl_map.insert({token, current_place_p});
 							
 							//old label is current name
@@ -241,8 +320,8 @@ namespace graphex{
 						//catch tr-pl boundary in file (pl token is not in tr map)
 						try{
 							//find transition concept, add place concepts to it from same file line
-							f_tr_concept* tr = f_tr_map.at(token);
-							f_pl_concept* pl;
+							loader_tr_concept<T_tr_index_frame>* tr = f_tr_map.at(token);
+							loader_pl_concept<T_tr_index_frame>* pl;
 							while(iss >> token){
 								pl = f_pl_map.at(token);
 								tr->inputs.push_back(pl);
@@ -262,8 +341,8 @@ namespace graphex{
 						D(cout<<"Link-file-to-concept pass, pl:"<<token<<endl;)
 						try{
 							//find place concept, add itself to transition concepts on same file line
-							f_tr_concept* tr;
-							f_pl_concept* pl = f_pl_map.at(token);
+							loader_tr_concept<T_tr_index_frame>* tr;
+							loader_pl_concept<T_tr_index_frame>* pl = f_pl_map.at(token);
 							while(iss >> token){
 									tr = f_tr_map.at(token);
 									tr->outputs.push_back(pl);
@@ -283,11 +362,21 @@ namespace graphex{
 				
 				
 			}
-			for(auto&i : f_tr_map){
-				for(auto&k : i.second->inputs){
-					cout<<k->new_label<<endl;
-				}
+			
+			vector<loader_pl_concept<T_tr_index_frame>*> out_pl_concepts;
+			vector<loader_tr_concept<T_tr_index_frame>*> out_tr_concepts;
+			
+			for(auto&i : f_pl_map){
+				out_pl_concepts.push_back(i.second);
 			}
+			
+			for(auto&i : f_tr_map){
+				out_tr_concepts.push_back(i.second);
+			}
+			
+			//pass concepts to the concept compiler
+			return compile(out_pl_concepts, out_tr_concepts, name_f);
+			
 		}
 		
 		//cpp nonsense -- workaround for cpp definition not in .h

@@ -6,6 +6,14 @@
 #include <unordered_map>
 #include <tuple>
 
+#define DEBUG_BUILD
+
+#ifdef DEBUG_BUILD 
+#define D(x) x
+#else 
+#define D(x)
+#endif
+
 namespace graphex{
 	namespace petrinet{
 		template <class T_pl_frame, class T_tr_index_frame>
@@ -146,21 +154,29 @@ namespace graphex{
 								
 								cout<<"special prefix found!: "<< label_set_name<<endl; //debug
 								//search patterns to find if it belongs to a substitution
+								bool pattern_present = 0;
 								for(auto& pattern_it : patterns){
 									//test if there is a valid substitution pattern
 									if(pattern_it.name == label_set_name){
 										//replace the label set name with the substitution
-										token.replace(s_start,s_end-s_start+1,pattern_it.sub);
+										token.replace(s_start,s_end-s_start,pattern_it.sub);
 										//add altered name to the current place concept
 										current_place_p->new_label = token;
 										//add whitelist from pattern to concept
 										current_place_p->whitelist = pattern_it.whitelist;
-									} else {
-										//if no match, copy unchanged label
-										current_place_p->new_label = token;
-										current_place_p->whitelist = {};
+										//if pattern is present, set flag
+										pattern_present = 1;
 									}
 								}
+								if(pattern_present == 0){
+									current_place_p->new_label = token;
+									current_place_p->whitelist = {};
+								}
+							} else {
+								//if no match, copy unchanged label
+								cout<<"Should be empty?: "<<token<<endl;
+								current_place_p->new_label = token;
+								current_place_p->whitelist = {};
 							}
 						}
 					}
@@ -220,38 +236,51 @@ namespace graphex{
 					
 					g_5_2:
 					if(!flag5_2){
-						cout<<"Final pass:"<<token<<endl;
-						//for each transition, is listed their outputs
+						D(cout<<"Link-file-to-concept pass, tr:"<<token<<endl;)
+						//for each transition, their outputs are listed
+						//catch tr-pl boundary in file (pl token is not in tr map)
 						try{
+							//find transition concept, add place concepts to it from same file line
 							f_tr_concept* tr = f_tr_map.at(token);
 							f_pl_concept* pl;
 							while(iss >> token){
 								pl = f_pl_map.at(token);
 								tr->inputs.push_back(pl);
 							}
-						}catch (const out_of_range& e){
+						}catch(const out_of_range& e){
+							D(cerr<<"Exception reached TR not in map (normal once) "<<token<<endl;)
 							flag5_2 = 1;
 							goto g_5_2;
 						}
 					}else{
+						//if . found, graph field has finished
 						if(token.rfind(".",0)==0){
 							flag5 = 0;
 							flag5_2 = 0;
 							flag6 = 1;
 						}
-						f_tr_concept* tr;
-						f_pl_concept* pl = f_pl_map.at(token);
-						while(iss >> token){
-								tr = f_tr_map.at(token);
-								tr->outputs.push_back(pl);
+						D(cout<<"Link-file-to-concept pass, pl:"<<token<<endl;)
+						try{
+							//find place concept, add itself to transition concepts on same file line
+							f_tr_concept* tr;
+							f_pl_concept* pl = f_pl_map.at(token);
+							while(iss >> token){
+									tr = f_tr_map.at(token);
+									tr->outputs.push_back(pl);
+							}
+						}catch(const out_of_range& e){
+								D(cerr<<"Exception reached PL not in map (normal once) "<<token<<endl;)
 						}
 					} 
 					
-					cout<< token;
 					
 					//cout<<tr->label<<endl;
 				} else if(flag6){
-					
+					for(auto&i : f_tr_map){
+						for(auto&k : i.second->inputs){
+							cout<<k->new_label<<endl;
+						}
+					}
 				}
 				
 			}

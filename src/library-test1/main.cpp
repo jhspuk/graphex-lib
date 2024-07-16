@@ -2,6 +2,8 @@
 #include <tuple>
 #include <vector>
 
+#define DEBUG_BUILD
+
 #include "graphex.h"
 
 int main(){

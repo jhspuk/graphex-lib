@@ -89,6 +89,7 @@ namespace graphex{
 			//create a new TR header - there is only ever one per addition - and one (unshared) PL group
 			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = new TR_header_s<T_pl_frame, T_tr_index_frame>;
 			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_group_f = new PL_header_s<T_pl_frame, T_tr_index_frame>;
+			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_group_temp_f;
 			//add TR, PL header to the register
 			tr_reg.push_back(tr_group_f);
 			pl_reg.push_back(pl_group_f);
@@ -115,7 +116,16 @@ namespace graphex{
 					i->exists=1;
 					auto it=pl_groupings.find(i->label_set);
 					if(it == pl_groupings.end()){
+						//add pl_concept to shared groupings
 						pl_groupings.insert({i->label_set,vector<loader_pl_concept<T_tr_index_frame>*>{i}});
+						//since grouping for this label set does not exist, set up a new place group and set up its features
+						pl_group_temp_f = new PL_header_s<T_pl_frame, T_tr_index_frame>;
+						//configurations...
+						pl_group_temp_f->protection=1;
+						pl_group_temp_f->descriptor.push_back(i->label_set);
+						pl_group_temp_f->body = new PL_s<T_pl_frame>;
+						
+						pl_groupings_reg.insert({i->label_set,pl_group_temp_f});
 					} else {
 						it->second.push_back(i);
 					}

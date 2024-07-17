@@ -82,29 +82,49 @@ namespace graphex{
 			cout<<"DEBUG: "<<__func__<<" END"<<endl;
 			#endif
 			//****** DEBUG Section END
-			//overall index of transition group
-			int tr_index_f;
-			//create a new TR header - there is only ever one per addition
+			
+			
+			//overall index of transition and place group
+			int tr_index_f; int pl_index_f;
+			//create a new TR header - there is only ever one per addition - and one (unshared) PL group
 			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = new TR_header_s<T_pl_frame, T_tr_index_frame>;
-			//add TR header to the register
+			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_group_f = new PL_header_s<T_pl_frame, T_tr_index_frame>;
+			//add TR, PL header to the register
 			tr_reg.push_back(tr_group_f);
+			pl_reg.push_back(pl_group_f);
 			//calculate index value of newly copied region
 			tr_index_f = tr_reg.size() - 1;
+			pl_index_f = pl_reg.size() - 1;
+			
+			//map to find common label sets (that do not currently exist) such that new PL groups
+			//can be created to contain them
+			unordered_map<std::string, std::vector<loader_pl_concept<T_tr_index_frame>*>> pl_groupings;
+			unordered_map<std::string, PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_groupings_reg;
 			
 			T_tr_index_frame search_result = {0,0};
 			
 			for(auto&i : pl_concepts){
-				//if finding
+				//if there is a result, then find the local index
 				if(find(i->new_label, i->whitelist, search_result)){
 					i->index_l = search_result;
 					i->exists=1;
-				} else {
-					
+				} else if(i->special != 1) {
 					D(cout<<i->new_label<<" does not exist!"<<endl;)
 					i->exists=0;
+				} else {
+					i->exists=1;
+					auto it=pl_groupings.find(i->label_set);
+					if(it == pl_groupings.end()){
+						pl_groupings.insert({i->label_set,vector<loader_pl_concept<T_tr_index_frame>*>{i}});
+					} else {
+						it->second.push_back(i);
+					}
 				}
 			}
 			
+			for(auto&i : pl_groupings){
+				cout<<"Groupings: "<<i.first<<endl;
+			}
 			
 			
 			D(cout<<"Compile finished"<<endl;)
@@ -226,10 +246,12 @@ namespace graphex{
 							//then there may exist a valid substitution
 							if(s_start==0){
 								
+								current_place_p->special = 1;	//set concept to special prefix
 								//grab the label set name (between prefix and the next underscore)
 								s_start = s_end;
 								s_end = token.find("_", s_start);
 								std::string label_set_name = token.substr(s_start,s_end-s_start);
+								current_place_p->label_set = label_set_name;	//set concept label set
 								
 								cout<<"special prefix found!: "<< label_set_name<<endl; //debug
 								//search patterns to find if it belongs to a substitution
@@ -245,6 +267,8 @@ namespace graphex{
 										current_place_p->whitelist = pattern_it.whitelist;
 										//if pattern is present, set flag
 										pattern_present = 1;
+										//set concept label set to new substitution
+										current_place_p->label_set = pattern_it.sub;
 									}
 								}
 								if(pattern_present == 0){

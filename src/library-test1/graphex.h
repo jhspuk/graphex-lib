@@ -128,6 +128,7 @@ namespace graphex{
 		struct loader_pl_concept{
 			std::string old_label;
 			std::string new_label;
+			std::string label_set;
 			
 			std::vector<int> whitelist;
 			
@@ -137,7 +138,8 @@ namespace graphex{
 			//local index
 			T_tr_index_frame index_l;
 			
-			bool exists;
+			bool exists;		//exists priorly in Graph
+			bool special;		//has x_ prefix
 			bool expressed;
 			
 		};

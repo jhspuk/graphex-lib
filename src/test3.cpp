@@ -39,7 +39,7 @@ struct tr{
 	
 	//index of place capacity
 	//input/output vectors alternate
-	std::vector<std::vector<T>> data;	
+	std::vector<std::vector<T>> data;
 	
 	//place group registry
 	//used to reference place groups

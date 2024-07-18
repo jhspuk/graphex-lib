@@ -157,7 +157,10 @@ namespace graphex{
 		
 		//******loader helpers END
 		
-
+		enum class Exe_mode{
+			Random,
+			Sequence
+		};
 		
 		template <class T_pl_frame, class T_tr_index_frame>
 		class Graph{
@@ -168,14 +171,18 @@ namespace graphex{
 				int add(std::string path, std::vector<pattern> patterns);
 				int add(std::string path, int);
 				int add(std::string path);
+				
 				int find(std::string search_term, std::vector<int> whitelist, T_tr_index_frame&);
+				
+				void print_pl();
+				
 				void fuse();
 				
 				//methods to read PN as vars, or spur a transition
 				void watch();
 				void prod();
 								
-				void execute(int index);
+				int execute__base(int index, Exe_mode mode);
 			private:
 			
 				//add overloading base function

@@ -7,6 +7,10 @@
 #include <tuple>
 #include <iterator>
 #include <type_traits>
+#include <algorithm>
+#include <random>
+#include <ctime>
+
 
 #define DEBUG_BUILD
 
@@ -25,6 +29,23 @@ namespace graphex{
 		template <class T_pl_frame, class T_tr_index_frame>
 		Graph<T_pl_frame, T_tr_index_frame>::~Graph(){
 			std::cout<<"Goodbye, world!"<<std::endl;
+		}
+		
+		
+		template<class T_pl_frame, class T_tr_index_frame>
+		void Graph<T_pl_frame, T_tr_index_frame>::print_pl(){
+			using namespace std;
+			cout<<"Begin print:"<<endl;
+			for(auto&i : pl_reg){
+				cout<<"Name of PL_group: "<<i->descriptor[0]<<" Protection: "<<i->protection<<" Ex Index: "<<i->index_graph<<endl;
+				
+				int counter = 0;
+				for(auto&k : i->body->data){
+					cout<<"Label: "<<i->body->labels[counter]<<" Value: "<<k.place_type<<":"<<k.place_data<<endl;
+					counter++;
+				}
+			}
+			return;
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
@@ -47,6 +68,7 @@ namespace graphex{
 				for(auto& i : pl_reg[mask]->body->labels){
 					//if there's a match, then calculate the exact index
 					if(i==search_term){
+						D(cout<<"SEARCH MATCH: "<<search_term<<endl;)
 						T_tr_index_frame index_f = {mask,count};
 						index_i_f = index_f;
 						return mask;
@@ -54,7 +76,7 @@ namespace graphex{
 					count++;
 				}
 			}
-			
+			D(cout<<"SEARCH NOT FOUND: "<<search_term<<endl;)
 			return -1;
 		}
 		
@@ -122,6 +144,8 @@ namespace graphex{
 			tr_index_f = tr_reg.size() - 1;
 			pl_index_f = pl_reg.size() - 1;
 			
+			pl_group_f->index_graph = pl_index_f;
+			
 			//map to find common label sets (that do not currently exist) such that new PL groups
 			//can be created to contain them
 			unordered_map<string, vector<loader_pl_concept<T_tr_index_frame>*>> pl_groupings;
@@ -151,8 +175,7 @@ namespace graphex{
 					}
 					
 				} else if(i->special != 1) {
-					//case two: the place is not special, therefore we will be
-					//creating it 
+					//case two: the place is not special, therefore is the central case
 					D(cout<<i->new_label<<" does not exist!"<<endl;)
 					//place does not already exist
 					i->exists = 0;
@@ -554,7 +577,7 @@ namespace graphex{
 							loader_pl_concept<T_tr_index_frame>* pl;
 							while(iss >> token){
 								pl = f_pl_map.at(token);
-								tr->inputs.push_back(pl);
+								tr->outputs.push_back(pl);
 							}
 						}catch(const out_of_range& e){
 							D(cerr<<"Exception reached TR not in map (normal once) "<<token<<endl;)
@@ -575,7 +598,7 @@ namespace graphex{
 							loader_pl_concept<T_tr_index_frame>* pl = f_pl_map.at(token);
 							while(iss >> token){
 									tr = f_tr_map.at(token);
-									tr->outputs.push_back(pl);
+									tr->inputs.push_back(pl);
 							}
 						}catch(const out_of_range& e){
 								D(cerr<<"Exception reached PL not in map (normal once) "<<token<<endl;)
@@ -609,11 +632,118 @@ namespace graphex{
 			
 		}
 		
+		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::execute__base(int index_graph_tr_l, Exe_mode mode){
+			
+			using namespace std;
+			
+			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = tr_reg[index_graph_tr_l];
+			auto data = tr_group_f->body->data;
+			
+			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_l_f;
+			
+			vector<int> exe_list; //list of indexes that can be executed
+			int counter = 0;
+			
+			vector<T_tr_index_frame> iv;	//input vector
+			bool out_flag = false;			//interleaving process flag
+			for(auto&iv : data){
+				
+				if(!out_flag){
+					int zero_tokens = 0;
+					for (auto&i : iv){
+						
+						//ascertain place group from group_index internal
+						//value
+						auto pl_group_f = tr_group_f->place_reg[i.group_index];
+						
+						if(pl_group_f->protection == 1){
+							//pushback pointer for mass unlock after
+							pl_reg_l_f.push_back(pl_group_f);
+							//lock mutex
+							pl_group_f->pl_lock.lock();
+						}
+						
+						if(pl_group_f->body->data[i.place_index].place_type == 0 && pl_group_f->body->data[i.place_index].place_data < 1){
+							//if normal place type and has less than 1 token, register this outcome
+							zero_tokens++;
+						}
+						
+						//can add more patterns here, with different types etc.
+					}
+
+					if(zero_tokens == 0){
+						//register an execution, there was minimum 1 token
+						//in all input places
+						exe_list.push_back(counter);
+						cout<<"Can fire!"<<std::endl;
+					}
+					
+				}
+				
+				counter++;
+				out_flag = !out_flag;
+
+			}
+			
+			//random element to shuffle execution stack
+			auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+			
+			switch(mode){
+				case Exe_mode::Random:
+					shuffle(exe_list.begin(),exe_list.end(),rng);
+					break;
+				default:
+					break;
+			}
+			
+			switch(mode){
+				case Exe_mode::Sequence:
+				case Exe_mode::Random:
+					for(auto&i : exe_list){
+						auto iv = data[i];
+						auto ov = data[i+1];
+						
+						//execute transition, start with output vector
+						//adding one to each
+						for (auto& k : ov){
+							auto pl_group_f = tr_group_f->place_reg[k.group_index];
+							
+							if(pl_group_f->protection == 1){
+								//pushback pointer for mass unlock after
+								pl_reg_l_f.push_back(pl_group_f);
+								//lock mutex
+								pl_group_f->pl_lock.lock();
+							}
+							
+							if(pl_group_f->body->data[k.place_index].place_type == 0){
+								pl_group_f->body->data[k.place_index].place_data++;
+							}
+						}
+						
+						for (auto& k : iv){
+							auto pl_group_f = tr_group_f->place_reg[k.group_index];
+							
+							if(pl_group_f->body->data[k.place_index].place_type == 0){
+								pl_group_f->body->data[k.place_index].place_data--;
+							}
+						}
+						break;	//only one execution per list!
+					}
+				default:
+					break;
+			}
+			
+			
+		}
+		
 		//cpp nonsense -- workaround for cpp definition not in .h
 		void dummy_link()
 		{
 			Graph<PL_frame<int,int>,TR_index_frame<int,int>> d1;
 			d1.add("d",std::vector<pattern>{});
+			d1.print_pl();
+			d1.execute__base(0,Exe_mode::Random);
 		}
 
 	}

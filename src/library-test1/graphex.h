@@ -60,6 +60,9 @@ namespace graphex{
 			//registry of place-transition links
 			std::vector<PL_TR_link<T_pl_frame, T_tr_index_frame>*> link_reg;
 			
+			//internal graph facing index of pl_groups
+			int index_graph;
+			
 			//meta description of place group
 			std::vector<std::string> descriptor;
 			

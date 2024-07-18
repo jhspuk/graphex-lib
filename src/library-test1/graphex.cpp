@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <iterator>
+#include <type_traits>
 
 #define DEBUG_BUILD
 
@@ -48,13 +49,13 @@ namespace graphex{
 					if(i==search_term){
 						T_tr_index_frame index_f = {mask,count};
 						index_i_f = index_f;
-						return 1;
+						return mask;
 					}
 					count++;
 				}
 			}
 			
-			return 0;
+			return -1;
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
@@ -89,7 +90,31 @@ namespace graphex{
 			//create a new TR header - there is only ever one per addition - and one (unshared) PL group
 			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = new TR_header_s<T_pl_frame, T_tr_index_frame>;
 			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_group_f = new PL_header_s<T_pl_frame, T_tr_index_frame>;
+			//create new tr pl link
+			PL_TR_link<T_pl_frame, T_tr_index_frame>* link_f = new PL_TR_link<T_pl_frame, T_tr_index_frame>;
+			
+			//configure tr pl link
+			link_f->tr_p = tr_group_f;
+			link_f->pl_p = pl_group_f;
+			link_f->change = 1;	//change is one to force first compute
+			
+			//configure base place group
+			pl_group_f->body = new PL_s<T_pl_frame>;
+			pl_group_f->protection = 0;
+			pl_group_f->descriptor.push_back(name_f);
+			pl_group_f->link_reg.push_back(link_f);
+			
+			//configure root transition group
+			tr_group_f->body = new TR_s<T_tr_index_frame>;
+			tr_group_f->descriptor.push_back(name_f);
+			tr_group_f->place_reg.push_back(pl_group_f);
+			tr_group_f->link_reg.push_back(link_f);
+			
+			//special, protected pl group pointer (there may be multiple)
 			PL_header_s<T_pl_frame, T_tr_index_frame>* pl_group_temp_f;
+			//links for shared place groups
+			PL_TR_link<T_pl_frame, T_tr_index_frame>* link_temp_f;
+			
 			//add TR, PL header to the register
 			tr_reg.push_back(tr_group_f);
 			pl_reg.push_back(pl_group_f);
@@ -99,45 +124,214 @@ namespace graphex{
 			
 			//map to find common label sets (that do not currently exist) such that new PL groups
 			//can be created to contain them
-			unordered_map<std::string, std::vector<loader_pl_concept<T_tr_index_frame>*>> pl_groupings;
-			unordered_map<std::string, PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_groupings_reg;
+			unordered_map<string, vector<loader_pl_concept<T_tr_index_frame>*>> pl_groupings;
+			unordered_map<string, PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_groupings_reg;
+			
+			unordered_map<int, vector<loader_pl_concept<T_tr_index_frame>*>> pl_groupings_exist;
 			
 			T_tr_index_frame search_result = {0,0};
-			
+			T_pl_frame contents = {0,0};
+
 			for(auto&i : pl_concepts){
-				//if there is a result, then find the local index
-				if(find(i->new_label, i->whitelist, search_result)){
+				
+				int index_result = find(i->new_label, i->whitelist, search_result);
+				//determine what kind of place is incoming, and resolve index
+				if(index_result >= 0){
+					//case one: the concept is special and
+					//there already exists a shared place within the whitelist
+					//therefore we know its index 
 					i->index_l = search_result;
 					i->exists=1;
+					
+					auto it = pl_groupings_exist.find(index_result);
+					if(it == pl_groupings_exist.end()){
+						pl_groupings_exist.insert({index_result,vector<loader_pl_concept<T_tr_index_frame>*>{i}});
+					} else {
+						it->second.push_back(i);
+					}
+					
 				} else if(i->special != 1) {
+					//case two: the place is not special, therefore we will be
+					//creating it 
 					D(cout<<i->new_label<<" does not exist!"<<endl;)
-					i->exists=0;
+					//place does not already exist
+					i->exists = 0;
+					
+					//create contents
+					contents.place_type = 0;
+					contents.place_data = static_cast<decltype(contents.place_data)>(i->value);
+					
+					//default place group index to 0 since this place group is
+					//the central one
+					i->index_l.group_index = 0;
+					
+					pl_group_f->body->data.push_back(contents);
+					pl_group_f->body->labels.push_back(i->new_label);
+					
+					i->index_l.place_index = static_cast<decltype(i->index_l.place_index)>(pl_group_f->body->data.size() - 1);
+					
 				} else {
+					//case three: the place is special, but nothing was returned
+					//in this case we therefore must create this shared memory
+					//such that it can be shared later on. However, the shared
+					//pl groups are bundled by label set, therefore we must also
+					//find its relatives when deciding how to create these new regions
 					i->exists=1;
 					auto it=pl_groupings.find(i->label_set);
 					if(it == pl_groupings.end()){
+						//Success: this label set is unique: create a new pl group
 						//add pl_concept to shared groupings
 						pl_groupings.insert({i->label_set,vector<loader_pl_concept<T_tr_index_frame>*>{i}});
 						//since grouping for this label set does not exist, set up a new place group and set up its features
 						pl_group_temp_f = new PL_header_s<T_pl_frame, T_tr_index_frame>;
-						//configurations...
+						//configurations of this new place group...
 						pl_group_temp_f->protection=1;
 						pl_group_temp_f->descriptor.push_back(i->label_set);
 						pl_group_temp_f->body = new PL_s<T_pl_frame>;
 						
+						pl_reg.push_back(pl_group_temp_f);
+						pl_group_temp_f->index_graph = pl_reg.size() - 1;
+						
 						pl_groupings_reg.insert({i->label_set,pl_group_temp_f});
+						
+						link_temp_f = new PL_TR_link<T_pl_frame, T_tr_index_frame>;
+						link_temp_f->pl_p = pl_group_temp_f;
+						link_temp_f->tr_p = tr_group_f;
+						link_temp_f->change = 1;
+						
+						tr_group_f->link_reg.push_back(link_temp_f);
+						pl_group_temp_f->link_reg.push_back(link_temp_f);
+						
+						//set group index to newly created place region
+						//search_result.group_index = static_cast<decltype(search_result.group_index)>(pl_groupings_reg.at(i->label_set)->index_graph);
+						
+						//set contents data to value of concept
+						//contents.place_data = static_cast<decltype(contents.place_data)>(i->value);
+						
+						//append data of concept
+						//pl_group_temp_f->body->data.push_back(contents);
+						//pl_group_temp_f->body->labels.push_back(i->new_label);
+						
+						//append newly created index from data to the place_index
+						//search_result.place_index = pl_group_temp_f->body->data.size() - 1;
 					} else {
+						//Otherwise, this label set is not unique: find its record
+						//and append the current concept to it
 						it->second.push_back(i);
-						//pl_groupings_reg.at(i->label_set);
-						//pl_groupings.at(i->label_set->second.push_back(i));
+						
+						search_result.group_index = static_cast<decltype(search_result.group_index)>(pl_groupings_reg.at(i->label_set)->index_graph);
+						
+						//set contents data to value of concept
+						//contents.place_data = static_cast<decltype(contents.place_data)>(i->value);
+						
+						//append data of concept
+						//pl_group_temp_f->body->data.push_back(contents);
+						//pl_group_temp_f->body->labels.push_back(i->new_label);
+						
+						//append newly created index from data to the place_index
+						//search_result.place_index = pl_group_temp_f->body->data.size() - 1;
 					}
 				}
 			}
 			
+			T_tr_index_frame tr_index_temp_f = {0,0};
+			
 			for(auto&i : pl_groupings){
-				cout<<"Groupings: "<<i.first<<endl;
+				D(cout<<"Groupings: "<<i.first<<endl;)
+				pl_group_temp_f = pl_groupings_reg.at(i.first);
+				
+				decltype(tr_index_temp_f.group_index) tr_index_l_f;
+				
+				tr_group_f->place_reg.push_back(pl_group_temp_f);
+				tr_index_l_f = tr_group_f->place_reg.size() - 1;
+				
+				tr_index_temp_f.group_index = tr_index_l_f;
+				
+				for(auto&k : i.second){
+					k->index_l.group_index = tr_index_temp_f.group_index;
+					//determine the values of the new to be created place
+					//note: type_data here defaults 0
+					contents.place_type = 0;
+					contents.place_data = static_cast<decltype(contents.place_data)>(k->value);
+					//create place data since this batch does not exist
+					pl_group_temp_f->body->data.push_back(contents);
+					pl_group_temp_f->body->labels.push_back(k->new_label);
+					
+					//find inner index based on new size of vector
+					k->index_l.place_index = static_cast<decltype(k->index_l.place_index)>(pl_group_temp_f->body->data.size() - 1);
+				}
 			}
 			
+			//ensure that all existing place concepts have the correct index associated with them
+			//no data should be added to be place group
+			//links must also be created to accommodate this place group - tr group connection
+			for(auto&i : pl_groupings_exist){
+				D(cout<<"Groupings that exist: "<<i.first<<endl;)
+				link_temp_f = new PL_TR_link<T_pl_frame, T_tr_index_frame>;
+				link_temp_f->pl_p = pl_reg[i.first];
+				link_temp_f->tr_p = tr_group_f;
+				link_temp_f->change = 1;
+				
+				tr_group_f->link_reg.push_back(link_temp_f);
+				pl_reg[i.first]->link_reg.push_back(link_temp_f);
+				
+				decltype(tr_index_temp_f.group_index) tr_index_l_f;
+				
+				tr_group_f->place_reg.push_back(pl_reg[i.first]);
+				tr_index_l_f = tr_group_f->place_reg.size() - 1;
+				
+				tr_index_temp_f.group_index = tr_index_l_f;
+				
+				for(auto&k : i.second){
+					//contents.place_data = static_cast<decltype(contents.place_data)>(k->value);
+					//pl_reg[i.first]->body->data.push_back(contents);
+					//pl_reg[i.first]->body->labels.push_back(k->new_label);
+					k->index_l.group_index = tr_index_temp_f.group_index;
+				}
+			}
+			
+			//******transition group linking
+			
+			for(auto&i : tr_concepts){
+				
+				//push back input and output connections
+				//Important note: input/output vector is
+				//INTERLEAVED within TR_s.data, with input
+				//stated first
+				std::vector<T_tr_index_frame> tr_index_lv_f;
+				for(auto&k : i->inputs){
+					tr_index_lv_f.push_back(k->index_l);
+				}
+				tr_group_f->body->data.push_back(tr_index_lv_f);
+				tr_index_lv_f.clear();
+				
+				for(auto&k : i->outputs){
+					tr_index_lv_f.push_back(k->index_l);
+				}
+				tr_group_f->body->data.push_back(tr_index_lv_f);
+			}
+			
+			//******transition group linking -- END
+			
+			#ifdef DEBUG_BUILD
+			for(auto&i : tr_group_f->place_reg){
+				cout<<i->link_reg[0]<<endl;
+				for(auto&k : i->body->labels){
+					cout<<"For PG "<<i->descriptor[0]<<": label: "<<k<<endl;
+				}
+			}
+			
+			for(auto&i:pl_concepts){
+				cout<<"Concept: "<<i->new_label<<" Index: "<<i->index_l.group_index<<":"<<i->index_l.place_index<<":"<<i->value<<endl;
+			}
+			
+			for(auto&i:tr_group_f->body->data){
+				cout<<"segment"<<endl;
+				for(auto&j:i){
+					cout<<"TR index: "<<j.group_index<<":"<<j.place_index<<endl;
+				}
+			}
+			#endif
 			
 			D(cout<<"Compile finished"<<endl;)
 			return tr_index_f;
@@ -332,7 +526,7 @@ namespace graphex{
 								
 							} else {
 								//implicit '1' assumed, set concept capacity to 1
-								f_pl_map.at(token)->value = capacity;
+								f_pl_map.at(token)->value = 1;
 							}
 							cout<<"Capacity: "<<capacity<<endl; //debug
 						}

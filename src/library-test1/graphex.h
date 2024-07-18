@@ -44,6 +44,11 @@ namespace graphex{
 			T_pl_index place_index;
 		};
 		
+		struct GS_index_frame{
+			int group_index;
+			int place_index;
+		};
+		
 		//******Small compositional structs END
 		
 		//forward definition
@@ -176,15 +181,14 @@ namespace graphex{
 		//******GET AND SET -- struct to define bits of a variable
 		//(assuming dual rail logic) such it can be either get or set
 		
-		template <class T_tr_index_frame>
 		struct GS_s{
-			
+			std::vector<GS_index_frame> lower_bits;
+			std::vector<GS_index_frame> upper_bits;
 		};
 		
-		template <class T_pl_frame, class T_tr_index_frame>
 		struct GS_header_s{
 			
-			GS_s<T_tr_index_frame>* body;
+			GS_s* body;
 			GS_vars type_l;
 			
 		};
@@ -206,9 +210,11 @@ namespace graphex{
 				
 				void print_pl();
 				
-				void fuse();
 				
 				//methods to read PN as vars, or spur a transition
+				int attach(std::vector<pattern>, std::vector<pattern>, GS_vars);
+				void set(int, uint8_t);
+				void get(int, uint8_t&);
 				void watch();
 				void prod();
 								
@@ -222,6 +228,7 @@ namespace graphex{
 				
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
 				std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg;
+				std::vector<GS_header_s*> gs_reg;
 		};
 		
 	}

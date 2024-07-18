@@ -739,6 +739,123 @@ namespace graphex{
 			
 		}
 		
+		template<class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::attach(std::vector<pattern> lower_bits_f, std::vector<pattern> upper_bits_f, GS_vars){
+			using namespace std;
+			T_tr_index_frame tr_index_temp_f;
+			GS_index_frame gs_index_temp_f;
+			
+			GS_header_s* gs_header_f = new GS_header_s;
+			int gs_index_f = 0;
+			
+			gs_reg.push_back(gs_header_f);
+			gs_index_f = gs_reg.size() - 1;
+			
+			for(auto&i : lower_bits_f){
+				int result = find(i.name, i.whitelist, tr_index_temp_f);
+				if(result > 0){
+					gs_index_temp_f.group_index = result;
+					gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
+					
+					gs_header_f->body->lower_bits.push_back(gs_index_temp_f);
+				} else {
+					cerr<<__func__<<" - GS lower failed to acquire!"<<endl;
+				}
+			}
+			
+			for(auto&i : upper_bits_f){
+				int result = find(i.name, i.whitelist, tr_index_temp_f);
+				if(result > 0){
+					gs_index_temp_f.group_index = result;
+					gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
+					
+					gs_header_f->body->upper_bits.push_back(gs_index_temp_f);
+				} else {
+					cerr<<__func__<<" - GS higher failed to acquire!"<<endl;
+				}
+			}
+
+			
+		}
+		
+		template<class T_pl_frame, class T_tr_index_frame>
+		void Graph<T_pl_frame, T_tr_index_frame>::get(int index_f, uint8_t& var){
+			
+			using namespace std;
+			
+			auto GS_header_f = gs_reg[index_f];
+			int counter = 1; var = 0;
+			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
+			
+			for(auto&i : GS_header_f->body->upper_bits){
+				auto pl_group_f = pl_reg[i.group_index];
+
+				if(pl_group_f->protection == 1){
+					pl_reg_lv_f.push_back(pl_group_f);
+					pl_group_f->pl_lock.lock();
+				}
+				
+				if(pl_group_f->body->data[i.place_index] > 0){
+					var |= counter;
+				}
+				
+				counter = counter << 1;
+			}
+			
+			for(auto&i : pl_reg_lv_f){
+				i->pl_lock.unlock();
+			}
+		}
+		
+		template<class T_pl_frame, class T_tr_index_frame>
+		void Graph<T_pl_frame, T_tr_index_frame>::set(int index_f, uint8_t input){
+			using namespace std;
+			
+			auto GS_header_f = gs_reg[index_f];
+			int counter = 1;
+			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
+			
+			for(auto&i : GS_header_f->body->upper_bits){
+				auto pl_group_f = pl_reg[i.group_index];
+
+				if(pl_group_f->protection == 1){
+					pl_reg_lv_f.push_back(pl_group_f);
+					pl_group_f->pl_lock.lock();
+				}
+				
+				if(input & counter){
+					pl_group_f->body->data[i.place_index].place_data = 1;
+				} else {
+					pl_group_f->body->data[i.place_index].place_data = 0;
+				}
+				
+				counter = counter << 1;
+			}
+			
+			counter = 1;
+			for(auto&i : GS_header_f->body->lower_bits){
+				auto pl_group_f = pl_reg[i.group_index];
+
+				if(pl_group_f->protection == 1){
+					pl_reg_lv_f.push_back(pl_group_f);
+					pl_group_f->pl_lock.lock();
+				}
+				
+				if(input & counter){
+					pl_group_f->body->data[i.place_index].place_data = 0;
+				} else {
+					pl_group_f->body->data[i.place_index].place_data = 1;
+				}
+				
+				counter = counter << 1;
+			}
+			
+			for(auto&i : pl_reg_lv_f){
+				i->pl_lock.unlock();
+			}
+
+		}
+		
 		//cpp nonsense -- workaround for cpp definition not in .h
 		void dummy_link()
 		{

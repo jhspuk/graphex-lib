@@ -128,6 +128,8 @@ namespace graphex{
 						pl_groupings_reg.insert({i->label_set,pl_group_temp_f});
 					} else {
 						it->second.push_back(i);
+						//pl_groupings_reg.at(i->label_set);
+						//pl_groupings.at(i->label_set->second.push_back(i));
 					}
 				}
 			}

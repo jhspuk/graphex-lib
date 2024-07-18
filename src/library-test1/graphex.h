@@ -207,12 +207,13 @@ namespace graphex{
 				int add(std::string path);
 				
 				int find(std::string search_term, std::vector<int> whitelist, T_tr_index_frame&);
+				void find_pg(int, std::vector<int>&);
 				
 				void print_pl();
 				
 				
 				//methods to read PN as vars, or spur a transition
-				int attach(std::vector<pattern>, std::vector<pattern>, GS_vars);
+				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
 				void set(int, uint8_t);
 				void get(int, uint8_t&);
 				void watch();

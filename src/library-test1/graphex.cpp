@@ -80,6 +80,14 @@ namespace graphex{
 			return -1;
 		}
 		
+		template<class T_pl_frame, class T_tr_index_frame>
+		void Graph<T_pl_frame, T_tr_index_frame>::find_pg(int tr_index_f, std::vector<int>& pg_result){
+			pg_result.clear();
+			for(auto&i : tr_reg[tr_index_f]->place_reg){
+				pg_result.push_back(i->index_graph);
+			}
+		}
+		
 		template <class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::compile(std::vector<loader_pl_concept<T_tr_index_frame>*> pl_concepts, std::vector<loader_tr_concept<T_tr_index_frame>*> tr_concepts, std::string name_f){
 			
@@ -531,25 +539,32 @@ namespace graphex{
 							//capacity value, otherwise implicit '1'
 							int s_start = 0;
 							int s_end = token.find("=", s_start);
+							
+							//check for end bracket "}" and remove
+							s_start = token.find("}", s_start);
+							if(s_start!=-1){
+								token.erase(s_start,1);
+							}
+							
 							if(s_end != -1){
 								
-								//check for end bracket "}" and remove
-								s_start = token.find("}", s_start);
-								if(s_start!=-1){
-									token.erase(s_start,1);
-								}
+
 								
 								//use position of equals to find number, then convert to integer
 								cout<<token.substr(s_end+1, token.length())<<" : "<<s_end<<endl; //debug
 								capacity = stoi(token.substr(s_end+1, token.length()));
 								
-								cout<<"normals: "<<token.substr(0, s_end+1)<<endl; //debug
+								cout<<"normals: "<<token.substr(0, s_end)<<endl; //debug
 								//find relevant place and set capacity
 								f_pl_map.at(token.substr(0, s_end))->value = capacity;
 								
 							} else {
 								//implicit '1' assumed, set concept capacity to 1
-								f_pl_map.at(token)->value = 1;
+								try{
+									f_pl_map.at(token)->value = 1;
+								}catch(const out_of_range& e){
+									cerr<<__func__<<" Error - token capacity check out of range, token: "<<token<<endl;
+								}
 							}
 							cout<<"Capacity: "<<capacity<<endl; //debug
 						}
@@ -746,6 +761,7 @@ namespace graphex{
 			GS_index_frame gs_index_temp_f;
 			
 			GS_header_s* gs_header_f = new GS_header_s;
+			gs_header_f->body = new GS_s;
 			int gs_index_f = 0;
 			
 			gs_reg.push_back(gs_header_f);
@@ -756,7 +772,6 @@ namespace graphex{
 				if(result > 0){
 					gs_index_temp_f.group_index = result;
 					gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
-					
 					gs_header_f->body->lower_bits.push_back(gs_index_temp_f);
 				} else {
 					cerr<<__func__<<" - GS lower failed to acquire!"<<endl;
@@ -775,7 +790,7 @@ namespace graphex{
 				}
 			}
 
-			
+			return gs_index_f;
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
@@ -795,7 +810,7 @@ namespace graphex{
 					pl_group_f->pl_lock.lock();
 				}
 				
-				if(pl_group_f->body->data[i.place_index] > 0){
+				if(pl_group_f->body->data[i.place_index].place_data > 0){
 					var |= counter;
 				}
 				
@@ -859,10 +874,18 @@ namespace graphex{
 		//cpp nonsense -- workaround for cpp definition not in .h
 		void dummy_link()
 		{
+			using namespace std;
 			Graph<PL_frame<int,int>,TR_index_frame<int,int>> d1;
 			d1.add("d",std::vector<pattern>{});
 			d1.print_pl();
 			d1.execute__base(0,Exe_mode::Random);
+			vector<int> v1 = {0};
+			d1.find_pg(0,v1);
+			d1.set(0,0);
+			uint8_t x1 = 0;
+			d1.get(0,x1);
+			
+			d1.attach(std::vector<pattern>{},std::vector<pattern>{},GS_vars::byte_1);
 		}
 
 	}

@@ -10,6 +10,22 @@ namespace graphex{
 	
 	namespace petrinet{
 		
+		//******ENUMS
+		enum class Exe_mode{
+			Random,
+			Sequence
+		};
+		
+		enum class GS_vars{
+			bit_1,
+			byte_1,
+			byte_2,
+			byte_4,
+			byte_8
+		};
+		
+		//******ENUMS END
+		
 		//word associations: pl = place, tr = transition
 		
 		//******Small compositional structs
@@ -157,10 +173,24 @@ namespace graphex{
 		
 		//******loader helpers END
 		
-		enum class Exe_mode{
-			Random,
-			Sequence
+		//******GET AND SET -- struct to define bits of a variable
+		//(assuming dual rail logic) such it can be either get or set
+		
+		template <class T_tr_index_frame>
+		struct GS_s{
+			
 		};
+		
+		template <class T_pl_frame, class T_tr_index_frame>
+		struct GS_header_s{
+			
+			GS_s<T_tr_index_frame>* body;
+			GS_vars type_l;
+			
+		};
+		
+		
+
 		
 		template <class T_pl_frame, class T_tr_index_frame>
 		class Graph{

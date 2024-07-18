@@ -676,7 +676,6 @@ namespace graphex{
 						//register an execution, there was minimum 1 token
 						//in all input places
 						exe_list.push_back(counter);
-						cout<<"Can fire!"<<std::endl;
 					}
 					
 				}
@@ -734,6 +733,9 @@ namespace graphex{
 					break;
 			}
 			
+			for(auto&i : pl_reg_l_f){
+				i->pl_lock.unlock();
+			}
 			
 		}
 		

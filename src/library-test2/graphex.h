@@ -263,11 +263,25 @@ namespace graphex{
 	namespace petrinet{
 		template <class T_pl_frame, class T_tr_index_frame>
 		Graph<T_pl_frame, T_tr_index_frame>::Graph(){
-			std::cout<<"Hello, world!"<<std::endl;
+			
 		}
 		template <class T_pl_frame, class T_tr_index_frame>
 		Graph<T_pl_frame, T_tr_index_frame>::~Graph(){
-			std::cout<<"Goodbye, world!"<<std::endl;
+			for(auto&i:tr_reg){
+				for(auto&k : i->link_reg){
+					delete k;
+				}
+				delete i->body;
+				delete i;
+			}
+			for(auto&i:pl_reg){
+				delete i->body;
+				delete i;
+			}
+			for(auto&i:gs_reg){
+				delete i->body;
+				delete i;
+			}
 		}
 		
 		

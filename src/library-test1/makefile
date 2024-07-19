@@ -1,6 +1,6 @@
 # Define the compiler and the flags
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -ggdb -O0
+CXXFLAGS = -Wall -Wextra -std=c++17 -O0 #-ggdb 
 
 # Define the target executable
 TARGET = main.run

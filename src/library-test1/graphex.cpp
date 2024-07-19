@@ -475,6 +475,8 @@ namespace graphex{
 							
 							//old label is current name
 							current_place_p->old_label = token;
+							//initialise empty
+							current_place_p->value = 0;
 							
 							int s_start = token.find(prefix_shared,0);
 							int s_end = prefix_shared.length();
@@ -691,6 +693,9 @@ namespace graphex{
 						//register an execution, there was minimum 1 token
 						//in all input places
 						exe_list.push_back(counter);
+						if(mode == Exe_mode::Sequence){
+							break;
+						}
 					}
 					
 				}
@@ -701,12 +706,14 @@ namespace graphex{
 			}
 			
 			//random element to shuffle execution stack
-			auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+			
 			
 			switch(mode){
-				case Exe_mode::Random:
+				case Exe_mode::Random:{
+					auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
 					shuffle(exe_list.begin(),exe_list.end(),rng);
 					break;
+				}
 				default:
 					break;
 			}
@@ -755,13 +762,14 @@ namespace graphex{
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
-		int Graph<T_pl_frame, T_tr_index_frame>::attach(std::vector<pattern> lower_bits_f, std::vector<pattern> upper_bits_f, GS_vars){
+		int Graph<T_pl_frame, T_tr_index_frame>::attach(std::vector<pattern> lower_bits_f, std::vector<pattern> upper_bits_f, GS_vars var_type){
 			using namespace std;
 			T_tr_index_frame tr_index_temp_f;
 			GS_index_frame gs_index_temp_f;
 			
 			GS_header_s* gs_header_f = new GS_header_s;
 			gs_header_f->body = new GS_s;
+			gs_header_f->type_l = var_type;
 			int gs_index_f = 0;
 			
 			gs_reg.push_back(gs_header_f);
@@ -769,7 +777,7 @@ namespace graphex{
 			
 			for(auto&i : lower_bits_f){
 				int result = find(i.name, i.whitelist, tr_index_temp_f);
-				if(result > 0){
+				if(result >= 0){
 					gs_index_temp_f.group_index = result;
 					gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
 					gs_header_f->body->lower_bits.push_back(gs_index_temp_f);
@@ -780,7 +788,7 @@ namespace graphex{
 			
 			for(auto&i : upper_bits_f){
 				int result = find(i.name, i.whitelist, tr_index_temp_f);
-				if(result > 0){
+				if(result >= 0){
 					gs_index_temp_f.group_index = result;
 					gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
 					
@@ -794,6 +802,33 @@ namespace graphex{
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::attach(pattern place){
+			using namespace std;
+			T_tr_index_frame tr_index_temp_f;
+			GS_index_frame gs_index_temp_f;
+			
+			GS_header_s* gs_header_f = new GS_header_s;
+			gs_header_f->body = new GS_s;
+			gs_header_f->type_l = GS_vars::place;
+			int gs_index_f = 0;
+			
+			gs_reg.push_back(gs_header_f);
+			gs_index_f = gs_reg.size() - 1;
+			
+
+			int result = find(place.name, place.whitelist, tr_index_temp_f);
+			if(result >= 0){
+				gs_index_temp_f.group_index = result;
+				gs_index_temp_f.place_index = static_cast<int>(tr_index_temp_f.place_index);
+				gs_header_f->body->lower_bits.push_back(gs_index_temp_f);
+			} else {
+				cerr<<__func__<<" - Place failed to acquire! "<<tr_index_temp_f.place_index<<endl;
+				cerr<<result<<endl;
+			}
+			
+		}
+		
+		template<class T_pl_frame, class T_tr_index_frame>
 		void Graph<T_pl_frame, T_tr_index_frame>::get(int index_f, uint8_t& var){
 			
 			using namespace std;
@@ -802,19 +837,39 @@ namespace graphex{
 			int counter = 1; var = 0;
 			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
 			
-			for(auto&i : GS_header_f->body->upper_bits){
-				auto pl_group_f = pl_reg[i.group_index];
+			switch(GS_header_f->type_l){
+				case GS_vars::byte_1: {
+					for(auto&i : GS_header_f->body->upper_bits){
+						auto pl_group_f = pl_reg[i.group_index];
+		
+						if(pl_group_f->protection == 1){
+							pl_reg_lv_f.push_back(pl_group_f);
+							pl_group_f->pl_lock.lock();
+						}
+						
+						if(pl_group_f->body->data[i.place_index].place_data > 0){
+							var |= counter;
+						}
+						
+						counter = counter << 1;
+					}
+					break;
+				}
+				case GS_vars::place: {
+					auto i = GS_header_f->body->lower_bits[0];
+					auto pl_group_f = pl_reg[i.group_index];
+					
+					if(pl_group_f->protection == 1){
+						pl_reg_lv_f.push_back(pl_group_f);
+						pl_group_f->pl_lock.lock();
+					}
+						
+					var = static_cast<uint8_t>(pl_group_f->body->data[i.place_index].place_data);
+					break;
+				}
+				default:
+					break;
 
-				if(pl_group_f->protection == 1){
-					pl_reg_lv_f.push_back(pl_group_f);
-					pl_group_f->pl_lock.lock();
-				}
-				
-				if(pl_group_f->body->data[i.place_index].place_data > 0){
-					var |= counter;
-				}
-				
-				counter = counter << 1;
 			}
 			
 			for(auto&i : pl_reg_lv_f){
@@ -886,6 +941,7 @@ namespace graphex{
 			d1.get(0,x1);
 			
 			d1.attach(std::vector<pattern>{},std::vector<pattern>{},GS_vars::byte_1);
+			d1.attach(pattern{});
 		}
 
 	}

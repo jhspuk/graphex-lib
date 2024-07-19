@@ -17,6 +17,7 @@ namespace graphex{
 		};
 		
 		enum class GS_vars{
+			place,
 			bit_1,
 			byte_1,
 			byte_2,
@@ -186,13 +187,12 @@ namespace graphex{
 			std::vector<GS_index_frame> upper_bits;
 		};
 		
-		struct GS_header_s{
-			
+		struct GS_header_s{			
 			GS_s* body;
 			GS_vars type_l;
-			
 		};
 		
+		//******GET AND SET END
 		
 
 		
@@ -214,12 +214,15 @@ namespace graphex{
 				
 				//methods to read PN as vars, or spur a transition
 				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
+				int attach(pattern place);
 				void set(int, uint8_t);
 				void get(int, uint8_t&);
 				void watch();
 				void prod();
 								
 				int execute__base(int index, Exe_mode mode);
+				std::vector<GS_header_s*> gs_reg;
+				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
 			private:
 			
 				//add overloading base function
@@ -227,9 +230,9 @@ namespace graphex{
 				int compile(std::vector<loader_pl_concept<T_tr_index_frame>*>, 
 							std::vector<loader_tr_concept<T_tr_index_frame>*>, std::string);
 				
-				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
+				
 				std::vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg;
-				std::vector<GS_header_s*> gs_reg;
+				
 		};
 		
 	}

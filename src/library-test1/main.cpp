@@ -36,42 +36,47 @@ int recur_demo(Graph<PL_frame<int,int>,TR_index_frame<int,int>>* pn, int depth, 
 int main(){
 	
 	using namespace std;
-
+	
 	//Mux Example
 	
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> mux;
 	int a; vector<int> b;
 	
-	a = mux.add("../../PN-examples/4-1_mux_empties.lpn",std::vector<pattern>{{"out1","in1",{}}});
+	a = mux.add("../../PN-examples/4-1_mux_empties.lpn",std::vector<pattern>{});
 	recur_demo(&mux, 4, a);
 	
 	for(int i = 0; i < mux.gs_reg.size(); i++){
-		mux.set(i, 0b10101111);
+		mux.set(i, 0b01010101);
+	}
+	b.clear();
+	mux.find_pg(0, b);
+	for(auto&i : b){
+		cout<<"Hits: "<<i<<endl;
 	}
 	
-	b.clear();
-	b.push_back(0);
-	
-	mux.attach(std::vector<pattern>{{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_d","",b},{"x_in2_d","",b},{"x_in3_d","",b},{"x_in4_d","",b}},std::vector<pattern>{{"x_in1_a","",b},{"x_in2_a","",b},{"x_in3_a","",b},{"x_in4_a","",b},{"x_in1_c","",b},{"x_in2_c","",b},{"x_in3_c","",b},{"x_in4_c","",b}},GS_vars::byte_1);
+	int ovs = 0;
+	ovs = mux.attach(std::vector<pattern>{{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_b","",b},{"x_in1_d","",b},{"x_in2_d","",b},{"x_in3_d","",b},{"x_in4_d","",b}},std::vector<pattern>{{"x_in1_a","",b},{"x_in2_a","",b},{"x_in3_a","",b},{"x_in4_a","",b},{"x_in1_c","",b},{"x_in2_c","",b},{"x_in3_c","",b},{"x_in4_c","",b}},GS_vars::byte_1);
 	
 	uint8_t out = 0;
 	
 	while(true){
-		mux.get(b[0], out);
+		mux.get(ovs, out);
 		cout<<bitset<8>(out)<<endl;
-		for(int k = 0; k < 1000; k++){
-			for(int i = 0; i < mux.tr_reg.size(); i++){
+		//mux.print_pl();
+		for(auto k = 0; k < 200; k++){
+			for(auto i = 0; i < mux.tr_reg.size(); i++){
 				mux.execute__base(i,Exe_mode::Random);
 			}
 		}
 
 	}
 	
+	
 	//TM Example
 	/*
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> tm;
 	int a; vector<int> b;
-	a = tm.add("/home/q/Documents/workspace/uni/petrinet/alex/tmCompletePetriNetDemo.lpn", std::vector<pattern>{});
+	a = tm.add("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn", std::vector<pattern>{});
 	tm.find_pg(a,b);
 	tm.attach({"p2","",b});
 	
@@ -103,12 +108,11 @@ int main(){
 	cout<<(int)epochs<<endl;
 	
 	tm.print_pl();
-	*/
 	
+	*/
 	
 
 	//cout<<(int)ta2<<endl;
-	
 	
 /*	
 	

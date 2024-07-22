@@ -233,8 +233,13 @@ namespace graphex{
 				//methods to read PN as vars, or spur a transition
 				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
 				int attach(pattern place);
-				void set(int, uint8_t);
-				void get(int, uint8_t&);
+				
+				template<class T_in>
+				void set(int, T_in);
+				
+				template<class T_ret>
+				void get(int, T_ret&);
+				
 				void watch();
 				void prod();
 								
@@ -1077,7 +1082,8 @@ namespace graphex{
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
-		void Graph<T_pl_frame, T_tr_index_frame>::get(int index_f, uint8_t& var){
+		template<class T_ret>
+		void Graph<T_pl_frame, T_tr_index_frame>::get(int index_f, T_ret& var){
 			
 			using namespace std;
 			
@@ -1112,7 +1118,7 @@ namespace graphex{
 						pl_group_f->pl_lock.lock();
 					}
 						
-					var = static_cast<uint8_t>(pl_group_f->body->data[i.place_index].place_data);
+					var = static_cast<T_ret>(pl_group_f->body->data[i.place_index].place_data);
 					break;
 				}
 				default:
@@ -1126,11 +1132,12 @@ namespace graphex{
 		}
 		
 		template<class T_pl_frame, class T_tr_index_frame>
-		void Graph<T_pl_frame, T_tr_index_frame>::set(int index_f, uint8_t input){
+		template<class T_in>
+		void Graph<T_pl_frame, T_tr_index_frame>::set(int index_f, T_in input){
 			using namespace std;
 			
 			auto GS_header_f = gs_reg[index_f];
-			int counter = 1;
+			T_in counter = 1;
 			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
 			
 			for(auto&i : GS_header_f->body->upper_bits){

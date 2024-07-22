@@ -31,8 +31,10 @@ int main(){
 		}
 		tm.get(0, epochs);
 		if(count != epochs){
-			tm.get(1, ta1);
-			cout<<"cl1.c1.cx2TA: "<<std::bitset<6>(ta1)<<endl;
+			tm.get<uint8_t>(1, ta1);
+			tm.get<uint8_t>(2, ta2);
+			cout<<"cl1.c0.cx1TA: "<<std::bitset<6>(ta1)<<endl;
+			cout<<"cl1.c1.cx2TA: "<<std::bitset<6>(ta2)<<endl<<endl;
 		}
 	}
 	

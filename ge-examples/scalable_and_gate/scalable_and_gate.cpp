@@ -1,9 +1,8 @@
-	#include <iostream>
-#include <tuple>
+#include <iostream>
 #include <vector>
 #include <bitset>
 
-#include "graphex.h"
+#include "../../src/graphex.h"
 
 using namespace graphex::petrinet;
 using namespace std;

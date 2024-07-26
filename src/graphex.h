@@ -430,6 +430,7 @@ namespace graphex{
 					//case one: the concept is special and
 					//there already exists a shared place within the whitelist
 					//therefore we know its index 
+					D(cout<<i->old_label<<" matches to new "<<i->new_label<<endl;)
 					i->index_l = search_result;
 					i->exists=1;
 					

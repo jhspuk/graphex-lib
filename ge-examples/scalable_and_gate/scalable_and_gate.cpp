@@ -7,42 +7,56 @@
 using namespace graphex::petrinet;
 using namespace std;
 
+//choose the node size of the graph network
+typedef Graph<PL_frame<int,int>,TR_index_frame<int,int>> T_graph;
+
+//recursive builder for fan in, returns indexes of leafnodes
+int r_fan_in(T_graph* pn, vector<int>& leafnodes, int depth, int previous){
+	
+	int temp_tr_index; vector<int> temp_places_match;
+	pn->find_pg(previous, temp_places_match);
+	
+	if(depth == 0){
+		leafnodes.push_back(previous);
+		return 1;
+	} else {
+		for(int i=0; i<4; i++){
+			temp_tr_index = pn->add("pn/g_fan_in_4.lpn",std::vector<pattern>{{"out1","in"+to_string(i+1),temp_places_match}});
+			r_fan_in(pn, leafnodes, depth - 1, temp_tr_index);
+		}
+		return 1;
+	}
+	return 1;
+}
+
+int r_fan_in(T_graph* pn, vector<int>& leafnodes, int depth){
+	
+	leafnodes.push_back(pn->add("pn/g_fan_in_4.lpn",vector<pattern>{}));
+	r_fan_in(pn, leafnodes, depth, leafnodes[0]);
+	return 1;
+}
+
+
+
+int r_fan_out(T_graph*){
+	
+}
+
 int main(){
-	Graph<PL_frame<int,int>,TR_index_frame<int,int>> tm;
-	int a; vector<int> b;
-	a = tm.add("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn", std::vector<pattern>{});
-	tm.find_pg(a,b);
-	tm.attach({"p2","",b});
 	
-	tm.attach({},std::vector<pattern>{{"cl1.c0.x1TA.exc1","",b},{"cl1.c0.x1TA.exc2","",b},{"cl1.c0.x1TA.exc3","",b},{"cl1.c0.x1TA.inc4","",b},{"cl1.c0.x1TA.inc5","",b},{"cl1.c0.x1TA.inc6","",b}},GS_vars::byte_1);
-	tm.attach({},std::vector<pattern>{{"cl1.c1.cx2TA.exc1","",b},{"cl1.c1.cx2TA.exc2","",b},{"cl1.c1.cx2TA.exc3","",b},{"cl1.c1.cx2TA.inc4","",b},{"cl1.c1.cx2TA.inc5","",b},{"cl1.c1.cx2TA.inc6","",b}},GS_vars::byte_1);
+	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
+	int temp_tr_index; vector<int> temp_places_match;
 	
-	uint8_t epochs = 10;
-	uint8_t ta1 = 0;
-	uint8_t ta2 = 0;
+	vector<int> leafnodes;
+	//leafnodes.push_back(large_and_gate.add("pn/g_fan_in.lpn",vector<pattern>{}));
+	r_fan_in(&large_and_gate, leafnodes, 4);
 	
-	tm.get(0, epochs);
-	
-	uint8_t count = 0;
-	while(epochs>0){
-		for(int i=0; i<1000; i++){
-			tm.execute__base(0,Exe_mode::Random);
-		}
-		tm.get(0, epochs);
-		if(count != epochs){
-			tm.get<uint8_t>(1, ta1);
-			tm.get<uint8_t>(2, ta2);
-			cout<<"cl1.c0.cx1TA: "<<std::bitset<6>(ta1)<<endl;
-			cout<<"cl1.c1.cx2TA: "<<std::bitset<6>(ta2)<<endl<<endl;
-		}
+	/*
+	for(auto& i:leafnodes){
+		cout<<"index: "<<i<<endl;
 	}
 	
-
-	//tm.get(1, ta2);
-	
-	
-	cout<<(int)epochs<<endl;
-	
-	//tm.print_pl();
+	cout<<"size: "<<leafnodes.size()<<endl;
+	*/
 	
 }

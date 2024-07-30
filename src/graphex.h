@@ -298,7 +298,7 @@ namespace graphex{
 			cout<<"Begin print:"<<endl;
 			int index_l_f = 0;
 			for(auto&i : pl_reg){
-				cout<<"------ Name of PL_group: "<<i->descriptor[0]<<", "<<index_l_f<<", Protection: "<<i->protection<<", Ex Index: "<< ", Locked? "<<!(i->pl_lock.try_lock())<<endl;
+				cout<<"------ Name of PL_group: "<<i->descriptor[0]<<", "<<index_l_f<<", Protection: "<<i->protection<<", Ex Index: "<<index_l_f<< ", Locked? "<<!(i->pl_lock.try_lock())<<endl;
 				
 				int counter = 0;
 				for(auto&k : i->body->data){
@@ -908,6 +908,7 @@ namespace graphex{
 				default:
 					break;
 			}
+			return 1;
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
@@ -916,6 +917,18 @@ namespace graphex{
 			using namespace std;
 			
 			TR_header_s<T_pl_frame, T_tr_index_frame>* tr_group_f = tr_reg[index_graph_tr_l];
+
+			//cout<<"Flag 1: "<<tr_group_f->descriptor[0]<<endl;
+			for(auto&i : tr_group_f->link_reg){
+				if(i->change == 1){
+					goto goto_exe1;
+				}
+			}
+			//no change, no need to calculate
+			return 0;
+			
+			//change, calculate new
+			goto_exe1:
 			auto data = tr_group_f->body->data;
 			
 			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_l_f;
@@ -966,16 +979,35 @@ namespace graphex{
 			}
 			//random element to shuffle execution stack
 			
-			
-			switch(mode){
-				case Exe_mode::Random:{
-					auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
-					shuffle(exe_list.begin(),exe_list.end(),rng);
-					break;
+			if(exe_list.size() != 0){
+				switch(mode){
+					case Exe_mode::Random:{
+						auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+						shuffle(exe_list.begin(),exe_list.end(),rng);
+						break;
+					}
+					default:
+						break;
 				}
-				default:
-					break;
+			} else {
+				//nothing in executable list, indicate no change
+				//which can be read next execution to save having to re-
+				//computes
+				for(auto&i : tr_group_f->place_reg){
+					if(i->protection == 1){
+						i->pl_lock.lock();
+						for(auto& k : i->link_reg){
+							k->change = 0;
+						}
+						i->pl_lock.unlock();
+					} else {
+						for(auto& k : i->link_reg){
+							k->change = 0;
+						}
+					}
+				}
 			}
+				
 			switch(mode){
 				case Exe_mode::Sequence:
 				case Exe_mode::Random:
@@ -993,10 +1025,7 @@ namespace graphex{
 								pl_group_f->pl_lock.lock();
 							}
 							
-							//for (auto& j : pl_group_f->link_reg){
-								////indicate change
-								//j->change = 1;
-							//}
+
 							
 							if(pl_group_f->body->data[k.place_index].place_type == 0){
 								pl_group_f->body->data[k.place_index].place_data++;
@@ -1016,7 +1045,12 @@ namespace graphex{
 					break;
 			}
 
-			for(auto&i : pl_reg_l_f){
+			for(auto& i : pl_reg_l_f){
+				for (auto& j : i->link_reg){
+					//indicate change, assuming indication only matters
+					//on shared (implied from protection == 1)
+					j->change = 1;
+				}
 				i->pl_lock.unlock();
 			}
 			return 1;

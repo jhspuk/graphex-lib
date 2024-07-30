@@ -88,7 +88,7 @@ int main(){
 	
 	//create scalable and gate modules to the power of four
 	vector<int> GS_and;
-	for(int i = 0; i < pow((double)(pow_4 - 1), 4); i++){
+	for(int i = 0; i < pow((double)4, (pow_4 - 1)); i++){
 		temp_places_match.clear();
 		large_and_gate.find_pg(leafnodes_out[i], temp_places_match);
 		large_and_gate.find_pg(leafnodes_in[i], temp_places_match_2);
@@ -114,17 +114,21 @@ int main(){
 				{"x_inc7_1","",temp_places_match_3},
 				{"x_inc8_1","",temp_places_match_3},
 				},GS_vars::byte_1));
+				cout<<"Start! "<< i << ", "<< k<< endl;
 		}
 	}
+	
+	cout<<"Start!"<<endl;
 	for(auto&i : GS_and){
 		large_and_gate.set(i, 254);
 	}
 
 	large_and_gate.set(GS_ex_in, 1);
+	cout<<"Start!"<<endl;
+	uint8_t end_f = 0;
 	
-	uint8_t end_f;
-	while(true){
-		for(int i = 0; i<1000; i++){
+	for(int i = 0;i<100000;i++){
+		for(int k = 0; i<10; i++){
 			large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
 		}
 		large_and_gate.get(GS_ex_out, end_f);
@@ -132,8 +136,11 @@ int main(){
 			cout<<"Finished!"<<endl;
 			break;
 		}
+		//break;
+		cout<<"Loop "<<i<<endl;
 	}
 	
+	cout<<"Finished!"<<endl;
 	large_and_gate.print_pl();
 		
 }

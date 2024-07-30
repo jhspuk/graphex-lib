@@ -58,5 +58,5 @@ x_out1_1
 x_ex1_i t0
 p11aaaa t1
 p11baaa t2
-.marking {x_in7_1}
+.marking {}
 .end

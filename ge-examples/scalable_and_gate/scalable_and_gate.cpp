@@ -48,7 +48,7 @@ int r_fan_out(T_graph* pn, vector<int>& leafnodes, int depth, int previous){
 	} else {
 		for(int i=0; i<4; i++){
 			temp_tr_index = pn->add("pn/g_fan_out_4.lpn",std::vector<pattern>{{"in1","out"+to_string(i+1),temp_places_match}});
-			r_fan_in(pn, leafnodes, depth - 1, temp_tr_index);
+			r_fan_out(pn, leafnodes, depth - 1, temp_tr_index);
 		}
 		return 1;
 	}
@@ -58,7 +58,7 @@ int r_fan_out(T_graph* pn, vector<int>& leafnodes, int depth, int previous){
 int r_fan_out(T_graph* pn, vector<int>& leafnodes, int depth){
 	
 	leafnodes.push_back(pn->add("pn/g_fan_out_4.lpn",vector<pattern>{}));
-	r_fan_in(pn, leafnodes, depth, leafnodes[0]);
+	r_fan_out(pn, leafnodes, depth, leafnodes[0]);
 	return 1;
 }
 
@@ -70,16 +70,29 @@ int main(){
 	vector<int> leafnodes_in;
 	vector<int> leafnodes_out;
 	//leafnodes.push_back(large_and_gate.add("pn/g_fan_in.lpn",vector<pattern>{}));
-	r_fan_in(&large_and_gate, leafnodes_in, 2);
+	//r_fan_in(&large_and_gate, leafnodes_in, 2);
 	
-	large_and_gate.find_pg(leafnodes_in[0], temp_places_match);
+	r_fan_out(&large_and_gate, leafnodes_out, 2);
+	large_and_gate.find_pg(leafnodes_out[0], temp_places_match);
 	
 	uint8_t input = 0;
 	
-	large_and_gate.attach({"x_out1_1","",temp_places_match});
+	large_and_gate.attach({"x_in1_1","",temp_places_match});
 	
 	large_and_gate.get(0, input);
 	cout<<"here is the input: "<<(int)input<<endl;
+	
+	large_and_gate.set(0, 1);
+	
+	large_and_gate.get(0, input);
+	cout<<"here is the input: "<<(int)input<<endl;
+	
+	for(int i = 0; i<100 ; i++){
+		large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Sequence);
+	}
+	large_and_gate.print_pl();
+	
+	
 	//r_fan_out(&large_and_gate, leafnodes_out, 4);
 	
 	/*

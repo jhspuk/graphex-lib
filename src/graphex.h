@@ -242,7 +242,9 @@ namespace graphex{
 				
 				void watch();
 				void prod();
-								
+				
+				int execute(Exe_mode mode_outer, Exe_mode mode_inner);
+				
 				int execute__base(int index, Exe_mode mode);
 				std::vector<GS_header_s*> gs_reg;
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
@@ -909,6 +911,26 @@ namespace graphex{
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::execute(Exe_mode mode_outer, Exe_mode mode_inner){
+			switch(mode_outer){
+				case Exe_mode::Sequence:{
+					for(size_t i = 0; i < tr_reg.size(); i++){
+						std::cout<<"executing ... "<<i<<std::endl;
+						execute__base(i, mode_inner);
+					}
+					break;
+				}
+				case Exe_mode::Random:{
+					auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+					std::uniform_int_distribution<int> gen(0, tr_reg.size());
+						execute__base(gen(rng), mode_inner);
+				}
+				default:
+					break;
+			}
+		}
+		
+		template <class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::execute__base(int index_graph_tr_l, Exe_mode mode){
 			
 			using namespace std;
@@ -1110,6 +1132,8 @@ namespace graphex{
 					}
 					break;
 				}
+				
+				//single place conventionally stored in lower bits
 				case GS_vars::place: {
 					auto i = GS_header_f->body->lower_bits[0];
 					auto pl_group_f = pl_reg[i.group_index];
@@ -1141,39 +1165,59 @@ namespace graphex{
 			T_in counter = 1;
 			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
 			
-			for(auto&i : GS_header_f->body->upper_bits){
-				auto pl_group_f = pl_reg[i.group_index];
-
-				if(pl_group_f->protection == 1){
-					pl_reg_lv_f.push_back(pl_group_f);
-					pl_group_f->pl_lock.lock();
+			switch(GS_header_f->type_l){
+				case GS_vars::place: {
+					auto i = GS_header_f->body->lower_bits[0];
+					auto pl_group_f = pl_reg[i.group_index];
+					
+					if(pl_group_f->protection == 1){
+						pl_reg_lv_f.push_back(pl_group_f);
+						pl_group_f->pl_lock.lock();
+					}
+						
+					pl_group_f->body->data[i.place_index].place_data = static_cast<decltype(T_pl_frame::place_data)>(input);
+					break;
+				}
+				default: {
+					//dual rail logic: assign upper bits
+					for(auto&i : GS_header_f->body->upper_bits){
+						auto pl_group_f = pl_reg[i.group_index];
+		
+						if(pl_group_f->protection == 1){
+							pl_reg_lv_f.push_back(pl_group_f);
+							pl_group_f->pl_lock.lock();
+						}
+						
+						if(input & counter){
+							pl_group_f->body->data[i.place_index].place_data = 1;
+						} else {
+							pl_group_f->body->data[i.place_index].place_data = 0;
+						}
+						
+						counter = counter << 1;
+					}
+					
+					//dual rail logic: assign lower bits
+					counter = 1;
+					for(auto&i : GS_header_f->body->lower_bits){
+						auto pl_group_f = pl_reg[i.group_index];
+		
+						if(pl_group_f->protection == 1){
+							pl_reg_lv_f.push_back(pl_group_f);
+							pl_group_f->pl_lock.lock();
+						}
+						
+						if(input & counter){
+							pl_group_f->body->data[i.place_index].place_data = 0;
+						} else {
+							pl_group_f->body->data[i.place_index].place_data = 1;
+						}
+						
+						counter = counter << 1;
+					}
+				break;
 				}
 				
-				if(input & counter){
-					pl_group_f->body->data[i.place_index].place_data = 1;
-				} else {
-					pl_group_f->body->data[i.place_index].place_data = 0;
-				}
-				
-				counter = counter << 1;
-			}
-			
-			counter = 1;
-			for(auto&i : GS_header_f->body->lower_bits){
-				auto pl_group_f = pl_reg[i.group_index];
-
-				if(pl_group_f->protection == 1){
-					pl_reg_lv_f.push_back(pl_group_f);
-					pl_group_f->pl_lock.lock();
-				}
-				
-				if(input & counter){
-					pl_group_f->body->data[i.place_index].place_data = 0;
-				} else {
-					pl_group_f->body->data[i.place_index].place_data = 1;
-				}
-				
-				counter = counter << 1;
 			}
 			
 			for(auto&i : pl_reg_lv_f){

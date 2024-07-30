@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <bitset>
+#include <cmath>
 
 #include "../../src/graphex.h"
 
@@ -65,42 +66,74 @@ int r_fan_out(T_graph* pn, vector<int>& leafnodes, int depth){
 int main(){
 	
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
-	int temp_tr_index; vector<int> temp_places_match;
+	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
-	vector<int> leafnodes_in;
-	vector<int> leafnodes_out;
-	//leafnodes.push_back(large_and_gate.add("pn/g_fan_in.lpn",vector<pattern>{}));
-	//r_fan_in(&large_and_gate, leafnodes_in, 2);
+	int pow_4 = 4; //number of modules to create (4^n)
 	
-	r_fan_out(&large_and_gate, leafnodes_out, 2);
+	//set up global 'ex' or 'calculate' line (fanning out)
+	//topology requires fanning out to many AND gates
+	vector<int> leafnodes_out; int GS_ex_in;
+	r_fan_out(&large_and_gate, leafnodes_out, pow_4 - 1);
 	large_and_gate.find_pg(leafnodes_out[0], temp_places_match);
+	GS_ex_in = large_and_gate.attach({"x_in1_1","",temp_places_match});
+	leafnodes_out.erase(leafnodes_out.begin());
 	
-	uint8_t input = 0;
+	//set up global 'inference' or 'calculate' line (fanning in)
+	//topology requires fanning in from many AND gates as halting signal
+	vector<int> leafnodes_in; int GS_ex_out;
+	r_fan_in(&large_and_gate, leafnodes_in, pow_4 - 1);
+	large_and_gate.find_pg(leafnodes_in[0], temp_places_match);
+	GS_ex_out = large_and_gate.attach({"x_out1_1","",temp_places_match});
+	leafnodes_in.erase(leafnodes_in.begin());
 	
-	large_and_gate.attach({"x_in1_1","",temp_places_match});
-	
-	large_and_gate.get(0, input);
-	cout<<"here is the input: "<<(int)input<<endl;
-	
-	large_and_gate.set(0, 1);
-	
-	large_and_gate.get(0, input);
-	cout<<"here is the input: "<<(int)input<<endl;
-	
-	for(int i = 0; i<100 ; i++){
-		large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Sequence);
+	//create scalable and gate modules to the power of four
+	vector<int> GS_and;
+	for(int i = 0; i < pow((double)(pow_4 - 1), 4); i++){
+		temp_places_match.clear();
+		large_and_gate.find_pg(leafnodes_out[i], temp_places_match);
+		large_and_gate.find_pg(leafnodes_in[i], temp_places_match_2);
+
+
+		for(int k = 0; k < 4; k++){
+			temp_tr_index = large_and_gate.add("pn/g_scalable_and_gate.lpn",std::vector<pattern>{{"ex1i","out"+to_string(k+1),temp_places_match},{"ex1o","in"+to_string(k+1),temp_places_match_2}});
+			large_and_gate.find_pg(temp_tr_index, temp_places_match_3);
+			GS_and.push_back(large_and_gate.attach(std::vector<pattern>{{"x_inc1_2","",temp_places_match_3},
+				{"x_inc2_2","",temp_places_match_3},
+				{"x_inc3_2","",temp_places_match_3},
+				{"x_inc4_2","",temp_places_match_3},
+				{"x_inc5_2","",temp_places_match_3},
+				{"x_inc6_2","",temp_places_match_3},
+				{"x_inc7_2","",temp_places_match_3},
+				{"x_inc8_2","",temp_places_match_3}
+				},std::vector<pattern>{{"x_inc1_1","",temp_places_match_3},
+				{"x_inc2_1","",temp_places_match_3},
+				{"x_inc3_1","",temp_places_match_3},
+				{"x_inc4_1","",temp_places_match_3},
+				{"x_inc5_1","",temp_places_match_3},
+				{"x_inc6_1","",temp_places_match_3},
+				{"x_inc7_1","",temp_places_match_3},
+				{"x_inc8_1","",temp_places_match_3},
+				},GS_vars::byte_1));
+		}
 	}
+	for(auto&i : GS_and){
+		large_and_gate.set(i, 254);
+	}
+
+	large_and_gate.set(GS_ex_in, 1);
+	
+	uint8_t end_f;
+	while(true){
+		for(int i = 0; i<1000; i++){
+			large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
+		}
+		large_and_gate.get(GS_ex_out, end_f);
+		if(end_f != 0){
+			cout<<"Finished!"<<endl;
+			break;
+		}
+	}
+	
 	large_and_gate.print_pl();
-	
-	
-	//r_fan_out(&large_and_gate, leafnodes_out, 4);
-	
-	/*
-	for(auto& i:leafnodes){
-		cout<<"index: "<<i<<endl;
-	}
-	
-	cout<<"size: "<<leafnodes.size()<<endl;
-	*/
-	
+		
 }

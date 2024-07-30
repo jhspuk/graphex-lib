@@ -296,14 +296,16 @@ namespace graphex{
 		void Graph<T_pl_frame, T_tr_index_frame>::print_pl(){
 			using namespace std;
 			cout<<"Begin print:"<<endl;
+			int index_l_f = 0;
 			for(auto&i : pl_reg){
-				cout<<"Name of PL_group: "<<i->descriptor[0]<<" Protection: "<<i->protection<<" Ex Index: "<<i->index_graph<<endl;
+				cout<<"------ Name of PL_group: "<<i->descriptor[0]<<", "<<index_l_f<<", Protection: "<<i->protection<<", Ex Index: "<< ", Locked? "<<!(i->pl_lock.try_lock())<<endl;
 				
 				int counter = 0;
 				for(auto&k : i->body->data){
 					cout<<"Label: "<<i->body->labels[counter]<<" Value: "<<k.place_type<<":"<<k.place_data<<endl;
 					counter++;
 				}
+			index_l_f++;
 			}
 			return;
 		}
@@ -645,34 +647,6 @@ namespace graphex{
 				return -1;
 			}
 			
-			//****** Conceptual struct framework -- used to express exact state of the network
-			/*
-			struct loader_pl_concept{
-				std::string old_label;
-				std::string new_label;
-				
-				std::vector<int> whitelist;
-				
-				//note: 32bit integer used here since file format
-				uint32_t value;
-				
-				bool exists;
-				bool expressed;
-				
-			};
-			
-			struct loader_tr_concept{
-				std::string label;
-				std::vector<loader_pl_concept*> inputs;
-				std::vector<loader_pl_concept*> outputs;
-				
-			};
-			//****** Conceptual struct framework END
-			*/
-			
-			//using loader_pl_concept = loader_pl_concept;
-			//using loader_tr_concept = loader_tr_concept;
-			
 			std::unordered_map<std::string, loader_tr_concept<T_tr_index_frame>*> f_tr_map;
 			std::unordered_map<std::string, loader_pl_concept<T_tr_index_frame>*> f_pl_map;
 			
@@ -769,6 +743,13 @@ namespace graphex{
 										pattern_present = 1;
 										//set concept label set to new substitution
 										current_place_p->label_set = pattern_it.sub;
+										//888
+										cout<<"Valid Substitution: "<< pattern_it.name<< " , "<< token << endl;
+										
+										for(auto&v : pattern_it.whitelist){
+											cout<<v<<endl;
+										}
+										//888
 									}
 								}
 								if(pattern_present == 0){
@@ -915,7 +896,6 @@ namespace graphex{
 			switch(mode_outer){
 				case Exe_mode::Sequence:{
 					for(size_t i = 0; i < tr_reg.size(); i++){
-						std::cout<<"executing ... "<<i<<std::endl;
 						execute__base(i, mode_inner);
 					}
 					break;
@@ -1004,8 +984,8 @@ namespace graphex{
 						auto ov = data[i+1];
 						//execute transition, start with output vector
 						//adding one to each
-						for (auto& k : ov){
-							auto pl_group_f = tr_group_f->place_reg[k.group_index];;
+						for(auto& k : ov){
+							auto pl_group_f = tr_group_f->place_reg[k.group_index];
 							if(pl_group_f->protection == 1){
 								//pushback pointer for mass unlock after
 								pl_reg_l_f.push_back(pl_group_f);
@@ -1013,12 +993,17 @@ namespace graphex{
 								pl_group_f->pl_lock.lock();
 							}
 							
+							//for (auto& j : pl_group_f->link_reg){
+								////indicate change
+								//j->change = 1;
+							//}
+							
 							if(pl_group_f->body->data[k.place_index].place_type == 0){
 								pl_group_f->body->data[k.place_index].place_data++;
 							}
 						}
 						
-						for (auto& k : iv){
+						for(auto& k : iv){
 							auto pl_group_f = tr_group_f->place_reg[k.group_index];
 							
 							if(pl_group_f->body->data[k.place_index].place_type == 0){

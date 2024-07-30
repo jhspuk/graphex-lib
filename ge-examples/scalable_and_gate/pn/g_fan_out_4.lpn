@@ -2,9 +2,9 @@
 # * Workcraft version:  3.5.0
 # * Operating system:   Linux amd64
 # * Creation timestamp: 2024-07-26T11:11:35.885+01:00
-# * Design title:       Untitled
+# * Design title:       fan_out
 # * JavaScript command: framework.exportWork(workspaceEntry, 'g_fan_out_4.lpn', 'LPN')
-.name Untitled
+.name fan_out
 .dummy t0 t1 t2 t3 t4
 .graph
 t0 x_out1_1

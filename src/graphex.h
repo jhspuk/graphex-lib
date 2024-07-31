@@ -925,7 +925,7 @@ namespace graphex{
 				}
 			}
 			//no change, no need to calculate
-			return 0;
+			//return 0;
 			
 			//change, calculate new
 			goto_exe1:

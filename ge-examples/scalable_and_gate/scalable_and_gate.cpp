@@ -83,7 +83,7 @@ int main(){
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
 	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
-	int pow_4 = 10; //number of modules to create (4^n)
+	int pow_4 = 4; //number of modules to create (4^n)
 	
 	//set up global 'ex' or 'calculate' line (fanning out)
 	//topology requires fanning out to many AND gates

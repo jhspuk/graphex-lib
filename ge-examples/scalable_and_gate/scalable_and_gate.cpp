@@ -128,7 +128,7 @@ int main(){
 	uint8_t end_f = 0;
 	
 	for(int i = 0;i<100000;i++){
-		for(int k = 0; i<10; i++){
+		for(int k = 0; k<10; k++){
 			large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
 		}
 		large_and_gate.get(GS_ex_out, end_f);

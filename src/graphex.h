@@ -646,24 +646,26 @@ namespace graphex{
 			for(auto&i : pg_indexes_f){
 				auto pl_temp_f = pl_reg[i];
 				int counter = 0;
-				for(auto&label_it : pl_temp_f->body->labels){
+				for(auto label_it : pl_temp_f->body->labels){
 					//find if place has special shared prefix
 					int s_start = label_it.find(prefix_shared,0);
 					int s_end = prefix_shared.length();
 					if(s_start==0){
 						//shared prefix found...
 						s_start = s_end;
-						s_end = label_it->name.find("_", s_start);
+						s_end = label_it.find("_", s_start);
 						string label_set_name = label_it.substr(s_start,s_end-s_start);
 						bool pattern_present = 0;
 						for(auto&pattern_it : patterns){
 							if(pattern_it.name == label_set_name){
+								temp_loader_pl = new loader_pl_concept<T_tr_index_frame>;
+								temp_loader_pl->old_label = label_it;
+								
+								temp_loader_pl->whitelist = pattern_it.whitelist;
 								//replace the label set name with the substitution
 								label_it.replace(s_start,s_end-s_start,pattern_it.sub);
+								temp_loader_pl->new_label = label_it;
 								//add altered name to the current place concept
-								//current_place_p->new_label = token;
-								//add whitelist from pattern to concept
-								//current_place_p->whitelist = pattern_it.whitelist;
 								//if pattern is present, set flag
 								pattern_present = 1;
 								//set concept label set to new substitution
@@ -700,7 +702,7 @@ namespace graphex{
 					//cerr<<"Error! Join failed - passed non-shared place into function"<<endl;
 			//}
 			
-			
+			return 1;
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
@@ -1191,11 +1193,14 @@ namespace graphex{
 			using namespace std;
 			
 			auto GS_header_f = gs_reg[index_f];
-			int counter = 1; var = 0;
+			T_ret counter = 1; var = 0;
 			vector<PL_header_s<T_pl_frame, T_tr_index_frame>*> pl_reg_lv_f;
 			
 			switch(GS_header_f->type_l){
-				case GS_vars::byte_1: {
+				case GS_vars::bit_1:
+				case GS_vars::byte_1:
+				case GS_vars::byte_2:
+				case GS_vars::byte_4: {
 					for(auto&i : GS_header_f->body->upper_bits){
 						auto pl_group_f = pl_reg[i.group_index];
 		

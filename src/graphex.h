@@ -231,7 +231,7 @@ namespace graphex{
 				
 				void print_pl();
 				
-				int join(int tr_index_f, std::vector<pattern> patterns);
+				int join(std::vector<int> pg_indexes_f, std::vector<pattern> patterns);
 				
 				//methods to read PN as vars, or spur a transition
 				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
@@ -635,37 +635,71 @@ namespace graphex{
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
-		int Graph<T_pl_frame, T_tr_index_frame>::join(int tr_index_f, std::vector<pattern> patterns){
+		int Graph<T_pl_frame, T_tr_index_frame>::join(std::vector<int> pg_indexes_f, std::vector<pattern> patterns){
 			using namespace std;
-			/*
+			
 			vector<loader_pl_concept<T_tr_index_frame>*> f_pl_reg;
 			loader_pl_concept<T_tr_index_frame>* temp_loader_pl;
 			
 			string prefix_shared = "x_";
 			
-			for(auto&i : patterns){
-				int s_start = i->name.find(prefix_shared,0);
-				int s_end = prefix_shared.length();
-				if(s_start==0){
+			for(auto&i : pg_indexes_f){
+				auto pl_temp_f = pl_reg[i];
+				int counter = 0;
+				for(auto&label_it : pl_temp_f->body->labels){
+					//find if place has special shared prefix
+					int s_start = label_it.find(prefix_shared,0);
+					int s_end = prefix_shared.length();
+					if(s_start==0){
+						//shared prefix found...
+						s_start = s_end;
+						s_end = label_it->name.find("_", s_start);
+						string label_set_name = label_it.substr(s_start,s_end-s_start);
+						bool pattern_present = 0;
+						for(auto&pattern_it : patterns){
+							if(pattern_it.name == label_set_name){
+								//replace the label set name with the substitution
+								label_it.replace(s_start,s_end-s_start,pattern_it.sub);
+								//add altered name to the current place concept
+								//current_place_p->new_label = token;
+								//add whitelist from pattern to concept
+								//current_place_p->whitelist = pattern_it.whitelist;
+								//if pattern is present, set flag
+								pattern_present = 1;
+								//set concept label set to new substitution
+								//current_place_p->label_set = pattern_it.sub;
+							}
+						}
+					}
 					
-					s_start = s_end;
-					s_end = i->name.find("_", s_start);
-					string label_set_name = token.substr(s_start,s_end-s_start);
-					i->label_set = label_set_name;	//set concept label set
-					
-					i->name
-					i->sub
-					i->whitelist
-					temp_loader_pl = new T_tr_index_frame;
-					temp_loader_pl->old_label = 
-					temp_loader_pl->new_label = 
-					temp_loader_pl->label_set = 
-					
-					f_pl_reg.push_back(new T_tr_index_frame)
-				} else {
-					cerr<<"Error! Join failed - passed non-shared place into function"<<endl;
+					counter++;
+				}
 			}
-			*/
+			
+			
+			//for(auto&i : patterns){
+				//int s_start = i->name.find(prefix_shared,0);
+				//int s_end = prefix_shared.length();
+				//if(s_start==0){
+					
+					//s_start = s_end;
+					//s_end = i->name.find("_", s_start);
+					//string label_set_name = token.substr(s_start,s_end-s_start);
+					//i->label_set = label_set_name;	//set concept label set
+					
+					//i->name
+					//i->sub
+					//i->whitelist
+					//temp_loader_pl = new T_tr_index_frame;
+					//temp_loader_pl->old_label = 
+					//temp_loader_pl->new_label = 
+					//temp_loader_pl->label_set = 
+					
+					//f_pl_reg.push_back(new T_tr_index_frame)
+				//} else {
+					//cerr<<"Error! Join failed - passed non-shared place into function"<<endl;
+			//}
+			
 			
 		}
 		

@@ -108,6 +108,7 @@ int main(){
 		large_and_gate.find_pg(leafnodes_out[i], temp_places_match);
 		large_and_gate.find_pg(leafnodes_in[i], temp_places_match_2);
 
+
 		for(int k = 0; k < 4; k++){
 			temp_tr_index = large_and_gate.add("pn/g_scalable_and_gate.lpn",std::vector<pattern>{{"ex1i","out"+to_string(k+1),temp_places_match},{"ex1o","in"+to_string(k+1),temp_places_match_2}});
 			large_and_gate.find_pg(temp_tr_index, temp_places_match_3);
@@ -134,7 +135,7 @@ int main(){
 	
 	for(auto&i : GS_and){
 		//input vector repeated
-		large_and_gate.set(i, 254);
+		large_and_gate.set(i, 255);
 	}
 	
 	//large_and_gate.print_pl();

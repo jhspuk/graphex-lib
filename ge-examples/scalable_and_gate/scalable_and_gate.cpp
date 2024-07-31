@@ -1,3 +1,18 @@
+//Description: Generates 4^n 8 bit AND gates, and creates global in, global out
+//lines for each using a recursive mux pattern. Additional behaviour can be added
+//by modifying g_scalable_and_gate.lpn
+//Tested up to 4^10 or 1,048,576 AND gates. This is equivalent to 1 megabyte of
+//data being processed. This consumed 22GB of ram, and 2 * 1398100 mux modules
+//were required for the recursive pattern. Overall this used 16,430,014 individual
+//place regions, and over 200,000,000 places/transitions!
+
+//TODO: Make AND gate recursive ... Currently output segmented but visible
+//with print_pl
+
+//Library discoveries: Need .join() functionality and the ability to synthesise
+//large mux elements.
+
+
 #include <iostream>
 #include <vector>
 #include <bitset>
@@ -68,7 +83,7 @@ int main(){
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
 	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
-	int pow_4 = 4; //number of modules to create (4^n)
+	int pow_4 = 10; //number of modules to create (4^n)
 	
 	//set up global 'ex' or 'calculate' line (fanning out)
 	//topology requires fanning out to many AND gates
@@ -114,20 +129,22 @@ int main(){
 				{"x_inc7_1","",temp_places_match_3},
 				{"x_inc8_1","",temp_places_match_3},
 				},GS_vars::byte_1));
-				cout<<"Start! "<< i << ", "<< k<< endl;
+				cout<<"Gate "<< i << ", "<< k<< endl;
 		}
 	}
 	
-	cout<<"Start!"<<endl;
 	for(auto&i : GS_and){
-		large_and_gate.set(i, 254);
+		//input vector repeated
+		large_and_gate.set(i, 255);
 	}
-
+	
+	//large_and_gate.print_pl();
+	
 	large_and_gate.set(GS_ex_in, 1);
 	cout<<"Start!"<<endl;
 	uint8_t end_f = 0;
 	
-	for(int i = 0;i<100000;i++){
+	for(int i = 0;i<10000000;i++){
 		for(int k = 0; k<10; k++){
 			large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
 		}
@@ -136,7 +153,6 @@ int main(){
 			cout<<"Finished!"<<endl;
 			break;
 		}
-		//break;
 		cout<<"Loop "<<i<<endl;
 	}
 	

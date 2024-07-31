@@ -16,7 +16,7 @@
 #ifndef GRAPHEX_H
 #define GRAPHEX_H
 
-#define DEBUG_BUILD
+//#define DEBUG_BUILD
 
 #ifdef DEBUG_BUILD 
 #define D(x) x
@@ -180,6 +180,8 @@ namespace graphex{
 			
 			//local index
 			T_tr_index_frame index_l;
+			//local index replace (post processing)
+			T_tr_index_frame index_replace_l;
 			
 			bool exists;		//exists priorly in Graph
 			bool special;		//has x_ prefix
@@ -229,6 +231,7 @@ namespace graphex{
 				
 				void print_pl();
 				
+				int join(int tr_index_f, std::vector<pattern> patterns);
 				
 				//methods to read PN as vars, or spur a transition
 				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
@@ -632,6 +635,41 @@ namespace graphex{
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::join(int tr_index_f, std::vector<pattern> patterns){
+			using namespace std;
+			/*
+			vector<loader_pl_concept<T_tr_index_frame>*> f_pl_reg;
+			loader_pl_concept<T_tr_index_frame>* temp_loader_pl;
+			
+			string prefix_shared = "x_";
+			
+			for(auto&i : patterns){
+				int s_start = i->name.find(prefix_shared,0);
+				int s_end = prefix_shared.length();
+				if(s_start==0){
+					
+					s_start = s_end;
+					s_end = i->name.find("_", s_start);
+					string label_set_name = token.substr(s_start,s_end-s_start);
+					i->label_set = label_set_name;	//set concept label set
+					
+					i->name
+					i->sub
+					i->whitelist
+					temp_loader_pl = new T_tr_index_frame;
+					temp_loader_pl->old_label = 
+					temp_loader_pl->new_label = 
+					temp_loader_pl->label_set = 
+					
+					f_pl_reg.push_back(new T_tr_index_frame)
+				} else {
+					cerr<<"Error! Join failed - passed non-shared place into function"<<endl;
+			}
+			*/
+			
+		}
+		
+		template <class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::add(std::string path, std::vector<pattern> patterns){
 			return add__base(path, patterns);
 		}
@@ -676,13 +714,13 @@ namespace graphex{
 					} else if(token == ".dummy"){
 						while(iss >> token){
 							
-							cout<<"found transition: "<<token<<endl; //debug
+							D(cout<<"found transition: "<<token<<endl;) //debug
 							
 							//create a new concept struct and add it to the map
 							//map is there as a more efficient array of concept structs
 							f_tr_map.insert({token, new loader_tr_concept<T_tr_index_frame>{token,{},{}}});
 							
-							cout<<"pointer: "<<f_tr_map.at(token)->label<<endl; //debug
+							D(cout<<"pointer: "<<f_tr_map.at(token)->label<<endl;) //debug
 						}
 					} else if(token == ".graph"){
 						//found graph section of lpn, start graph section routine
@@ -727,7 +765,7 @@ namespace graphex{
 								std::string label_set_name = token.substr(s_start,s_end-s_start);
 								current_place_p->label_set = label_set_name;	//set concept label set
 								
-								cout<<"special prefix found!: "<< label_set_name<<endl; //debug
+								D(cout<<"special prefix found!: "<< label_set_name<<endl;) //debug
 								//search patterns to find if it belongs to a substitution
 								bool pattern_present = 0;
 								for(auto& pattern_it : patterns){
@@ -743,13 +781,6 @@ namespace graphex{
 										pattern_present = 1;
 										//set concept label set to new substitution
 										current_place_p->label_set = pattern_it.sub;
-										//888
-										cout<<"Valid Substitution: "<< pattern_it.name<< " , "<< token << endl;
-										
-										for(auto&v : pattern_it.whitelist){
-											cout<<v<<endl;
-										}
-										//888
 									}
 								}
 								if(pattern_present == 0){
@@ -758,7 +789,7 @@ namespace graphex{
 								}
 							} else {
 								//if no match, copy unchanged label
-								cout<<"Should be empty?: "<<token<<endl;
+								D(cout<<"Should be empty?: "<<token<<endl;)
 								current_place_p->new_label = token;
 								current_place_p->whitelist = {};
 							}
@@ -810,7 +841,7 @@ namespace graphex{
 									cerr<<__func__<<" Error - token capacity check out of range, token: "<<token<<endl;
 								}
 							}
-							cout<<"Capacity: "<<capacity<<endl; //debug
+							D(cout<<"Capacity: "<<capacity<<endl;) //debug
 						}
 					} else if(token == ".end"){
 						flag3 = 0;
@@ -925,7 +956,7 @@ namespace graphex{
 				}
 			}
 			//no change, no need to calculate
-			//return 0;
+			return 0;
 			
 			//change, calculate new
 			goto_exe1:
@@ -993,17 +1024,13 @@ namespace graphex{
 				//nothing in executable list, indicate no change
 				//which can be read next execution to save having to re-
 				//computes
-				for(auto&i : tr_group_f->place_reg){
-					if(i->protection == 1){
-						i->pl_lock.lock();
-						for(auto& k : i->link_reg){
-							k->change = 0;
-						}
-						i->pl_lock.unlock();
+				for(auto&i : tr_group_f->link_reg){
+					if(i->pl_p->protection == 1){
+						i->pl_p->pl_lock.lock();
+						i->change = 0;
+						i->pl_p->pl_lock.unlock();
 					} else {
-						for(auto& k : i->link_reg){
-							k->change = 0;
-						}
+						i->change = 0;
 					}
 				}
 			}

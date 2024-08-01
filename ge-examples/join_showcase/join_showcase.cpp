@@ -35,7 +35,7 @@ int main(){
 	
 	g.set(1, 1);
 	
-	#define LOOP_SIZE 100
+	#define LOOP_SIZE 10
 	
 	for (int i = 0; i < (LOOP_SIZE - 2); i++){
 		//assemble a single pipeline
@@ -57,8 +57,12 @@ int main(){
 	
 	//now execute and see if counter makes it around the pipeline...
 	for(int i = 0; i< 1000; i++){
-		g.execute(Exe_mode::Sequence,Exe_mode::Random);
+		g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, 16);
+		
+		//g.execute(Exe_mode::Sequence,Exe_mode::Random);
 	}
+	
+	//g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, 16);
 	
 	g.print_pl();
 	

@@ -13,6 +13,7 @@
 #include <random>
 //#include <ctime>
 #include <chrono>
+#include <thread>
 
 #ifndef GRAPHEX_H
 #define GRAPHEX_H
@@ -248,12 +249,15 @@ namespace graphex{
 				void prod();
 				
 				int execute(Exe_mode mode_outer, Exe_mode mode_inner);
+				int execute_parallel(Exe_mode mode_outer, Exe_mode mode_inner, int threads);
 				
 				int execute__base(int index, Exe_mode mode);
+				int execute__thread(Exe_mode mode_inner, std::vector<int> t_indexes_l);
+				
 				std::vector<GS_header_s*> gs_reg;
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
 			private:
-			
+				
 				//add overloading base function
 				int add__base(std::string path, std::vector<pattern> patterns);
 				int compile(std::vector<loader_pl_concept<T_tr_index_frame>*>, 
@@ -1023,9 +1027,95 @@ namespace graphex{
 					break;
 				}
 				case Exe_mode::Random:{
-					auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+					auto time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+					auto rng = std::default_random_engine {static_cast<unsigned long>(time_seed)};
 					std::uniform_int_distribution<int> gen(0, tr_reg.size());
 						execute__base(gen(rng), mode_inner);
+				}
+				default:
+					break;
+			}
+			return 1;
+		}
+		
+		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::execute__thread(Exe_mode mode_inner, std::vector<int> t_indexes_l){
+			
+		}
+		
+		template <class T_pl_frame, class T_tr_index_frame>
+		int Graph<T_pl_frame, T_tr_index_frame>::execute_parallel(Exe_mode mode_outer, Exe_mode mode_inner, int threads){
+			
+			using namespace std;
+			
+			int division_size = tr_reg.size() / threads;
+			int division_size_r = tr_reg.size() % threads;
+			
+			if (division_size == 0){
+				threads = division_size_r;
+				
+				division_size = tr_reg.size() / threads;
+				division_size_r = tr_reg.size() % threads;
+			}
+			
+			vector<thread> processes;
+			
+			switch(mode_outer){
+				case Exe_mode::Sequence:{
+					for(size_t i = 0; i < tr_reg.size(); i++){
+						execute__base(i, mode_inner);
+					}
+					break;
+				}
+				case Exe_mode::Random:{
+					
+					vector<int> rand_index;
+					vector<vector<int>> rand_subsections;
+					
+					//cout<<"Division size: "<<division_size<<endl;
+					//cout<<"Division size r: "<<division_size_r<<endl;
+					
+					for(int i = 0; i < tr_reg.size(); i++){
+						rand_index.push_back(i);
+					}
+					
+					auto time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+					auto rng = std::default_random_engine {static_cast<unsigned long>(time_seed)};
+					shuffle(rand_index.begin(),rand_index.end(),rng);
+					
+					{
+						bool r_add = 1;
+						for(int i = 0; i < threads; i++){
+							if(division_size_r > 0) {division_size_r--;} else {r_add = 0;}
+							rand_subsections.emplace_back(rand_index.begin() + (division_size + r_add) * i, 
+							rand_index.begin() + (division_size + r_add) * (i + 1));
+						}
+						
+
+					
+					}
+					
+					int counter = 0;
+					for(auto& i : rand_subsections){
+						
+						processes.push_back(thread([this, mode_inner, i](){
+								for(auto& k : i){
+									execute__base(k, mode_inner);
+								}
+							}));
+						//cout<<"Section: "<<endl;
+						//for(auto& k : i){
+							//cout<<k<<endl;
+						//}
+						counter++;
+					}
+					
+					for(auto&i : processes){
+						if(i.joinable()){
+							i.join();
+						}
+					}
+						//execute__base(gen(rng), mode_inner);
 				}
 				default:
 					break;

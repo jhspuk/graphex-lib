@@ -57,14 +57,14 @@ namespace graphex{
 		struct PL_frame{
 			T_pl_type place_type;
 			T_pl_data place_data;
-		};
+		} __attribute__((packed));
 		
 		//index_frame -- How to find a specific place
 		template<class T_group_index, class T_pl_index>
 		struct TR_index_frame{
 			T_group_index group_index;
 			T_pl_index place_index;
-		};
+		} __attribute__((packed));
 		
 		struct GS_index_frame{
 			int group_index;
@@ -341,7 +341,7 @@ namespace graphex{
 					//if there's a match, then calculate the exact index
 					if(i==search_term){
 						D(cout<<"SEARCH MATCH: "<<search_term<<endl;)
-						T_tr_index_frame index_f = {mask,count};
+						T_tr_index_frame index_f = {static_cast<decltype(T_tr_index_frame::group_index)>(mask),static_cast<decltype(T_tr_index_frame::place_index)>(count)};
 						index_i_f = index_f;
 						return mask;
 					}

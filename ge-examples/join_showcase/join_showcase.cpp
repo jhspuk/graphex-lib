@@ -5,6 +5,8 @@
 
 #include "../../src/graphex.h"
 
+#define NUM_THREADS 16
+
 using namespace graphex::petrinet;
 using namespace std;
 
@@ -35,7 +37,7 @@ int main(){
 	
 	g.set(1, 1);
 	
-	#define LOOP_SIZE 10
+	#define LOOP_SIZE 100
 	
 	for (int i = 0; i < (LOOP_SIZE - 2); i++){
 		//assemble a single pipeline
@@ -55,15 +57,15 @@ int main(){
 	//make a connection from ([last, this], to [last -> first in pattern, that])
 	//g.join(ti, ps{{"outx","in",tp2}});
 	
+	//g.print_pl();
+	
 	//now execute and see if counter makes it around the pipeline...
-	for(int i = 0; i< 1000; i++){
-		g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, 16);
-		
+	for(int i = 0; i< 10000; i++){
+		//g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, NUM_THREADS);
 		//g.execute(Exe_mode::Sequence,Exe_mode::Random);
 	}
+	g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, NUM_THREADS);
 	
-	//g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, 16);
-	
-	g.print_pl();
+	//g.print_pl();
 	
 };

@@ -14,6 +14,7 @@
 //#include <ctime>
 #include <chrono>
 #include <thread>
+#include <set>
 
 #ifndef GRAPHEX_H
 #define GRAPHEX_H
@@ -252,7 +253,6 @@ namespace graphex{
 				int execute_parallel(Exe_mode mode_outer, Exe_mode mode_inner, int threads);
 				
 				int execute__base(int index, Exe_mode mode);
-				int execute__thread(Exe_mode mode_inner, std::vector<int> t_indexes_l);
 				
 				std::vector<GS_header_s*> gs_reg;
 				std::vector<TR_header_s<T_pl_frame, T_tr_index_frame>*> tr_reg;
@@ -643,7 +643,7 @@ namespace graphex{
 		
 		template <class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::join(int tr_index_f, std::vector<pattern> patterns){
-			using namespace std;
+					using namespace std;
 			
 			vector<loader_pl_concept<T_tr_index_frame>*> f_pl_reg;
 			loader_pl_concept<T_tr_index_frame>* temp_loader_pl;
@@ -1039,11 +1039,6 @@ namespace graphex{
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
-		int Graph<T_pl_frame, T_tr_index_frame>::execute__thread(Exe_mode mode_inner, std::vector<int> t_indexes_l){
-			
-		}
-		
-		template <class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::execute_parallel(Exe_mode mode_outer, Exe_mode mode_inner, int threads){
 			
 			using namespace std;
@@ -1084,11 +1079,14 @@ namespace graphex{
 					shuffle(rand_index.begin(),rand_index.end(),rng);
 					
 					{
-						bool r_add = 1;
+						bool r_add = 1; int start = 0; int end = 0;
 						for(int i = 0; i < threads; i++){
 							if(division_size_r > 0) {division_size_r--;} else {r_add = 0;}
-							rand_subsections.emplace_back(rand_index.begin() + (division_size + r_add) * i, 
-							rand_index.begin() + (division_size + r_add) * (i + 1));
+							end = start + division_size + r_add;
+							rand_subsections.emplace_back(rand_index.begin() + start, rand_index.begin() + end);
+							start = end;
+							//rand_subsections.emplace_back(rand_index.begin() + (division_size + r_add) * i, 
+							//rand_index.begin() + (division_size + r_add) * (i + 1));
 						}
 						
 
@@ -1107,7 +1105,7 @@ namespace graphex{
 						//for(auto& k : i){
 							//cout<<k<<endl;
 						//}
-						counter++;
+						//counter++;
 					}
 					
 					for(auto&i : processes){

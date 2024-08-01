@@ -84,7 +84,7 @@ int main(){
 	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
 	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
-	int pow_4 = 10; //number of modules to create (4^n)
+	int pow_4 = 6; //number of modules to create (4^n)
 	
 	//set up global 'ex' or 'calculate' line (fanning out)
 	//topology requires fanning out to many AND gates
@@ -150,7 +150,7 @@ int main(){
 	for(int i = 0;i<10000000;i++){
 		for(int k = 0; k<10; k++){
 			//large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
-			large_and_gate.execute_parallel(Exe_mode::Random, Exe_mode::Random, 16);
+			large_and_gate.execute_parallel(Exe_mode::Random, Exe_mode::Sequence, 16);
 		}
 		large_and_gate.get(GS_ex_out, end_f);
 		if(end_f != 0){
@@ -162,7 +162,9 @@ int main(){
 	
 	auto end = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(end - start);
-	//large_and_gate.print_pl();
+	
+	large_and_gate.print_pl();
+	
 	cout << "Elapsed time: " << duration.count() << " ms" << endl;
 	
 	cout<<"Finished!"<<endl;

@@ -35,6 +35,7 @@ int main(){
 	g.attach({"x_in_1","",tp});
 	g.attach({"x_in_2","",tp});
 	
+	//set one of the first inputs to a token...
 	g.set(1, 1);
 	
 	#define LOOP_SIZE 100
@@ -55,17 +56,14 @@ int main(){
 	//get the place groups of the first pipeline module
 	g.find_pg(ti2, tp2);
 	//make a connection from ([last, this], to [last -> first in pattern, that])
-	//g.join(ti, ps{{"outx","in",tp2}});
-	
-	//g.print_pl();
+	g.join(ti, ps{{"outx","in",tp2}});
 	
 	//now execute and see if counter makes it around the pipeline...
 	for(int i = 0; i< 10000; i++){
-		//g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, NUM_THREADS);
+		g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, NUM_THREADS);
 		//g.execute(Exe_mode::Sequence,Exe_mode::Random);
 	}
-	g.execute_parallel(Exe_mode::Random ,Exe_mode::Random, NUM_THREADS);
 	
-	//g.print_pl();
+	g.print_pl();
 	
 };

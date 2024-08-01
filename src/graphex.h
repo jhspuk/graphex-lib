@@ -231,7 +231,7 @@ namespace graphex{
 				
 				void print_pl();
 				
-				int join(std::vector<int> pg_indexes_f, std::vector<pattern> patterns);
+				int join(int tr_index_f, std::vector<pattern> patterns);
 				
 				//methods to read PN as vars, or spur a transition
 				int attach(std::vector<pattern> lower, std::vector<pattern> upper, GS_vars);
@@ -313,6 +313,8 @@ namespace graphex{
 			return;
 		}
 		
+		//IMPORTANT INFORMATION! The outer index returned here is a global index! Therefore, per tr pl index is different
+		//Improvements to make: return size_t as global index, only return inner index - less confusing!
 		template<class T_pl_frame, class T_tr_index_frame>
 		int Graph<T_pl_frame, T_tr_index_frame>::find(std::string search_term, std::vector<int> whitelist, T_tr_index_frame& index_i_f){
 			using namespace std;
@@ -635,13 +637,16 @@ namespace graphex{
 		}
 		
 		template <class T_pl_frame, class T_tr_index_frame>
-		int Graph<T_pl_frame, T_tr_index_frame>::join(std::vector<int> pg_indexes_f, std::vector<pattern> patterns){
+		int Graph<T_pl_frame, T_tr_index_frame>::join(int tr_index_f, std::vector<pattern> patterns){
 			using namespace std;
 			
 			vector<loader_pl_concept<T_tr_index_frame>*> f_pl_reg;
 			loader_pl_concept<T_tr_index_frame>* temp_loader_pl;
 			
 			string prefix_shared = "x_";
+			
+			vector<int> pg_indexes_f;
+			find_pg(tr_index_f, pg_indexes_f);
 			
 			for(auto&i : pg_indexes_f){
 				auto pl_temp_f = pl_reg[i];
@@ -651,6 +656,7 @@ namespace graphex{
 					int s_start = label_it.find(prefix_shared,0);
 					int s_end = prefix_shared.length();
 					if(s_start==0){
+						D(cout<<"Join: special found: "<<label_it<<endl;)
 						//shared prefix found...
 						s_start = s_end;
 						s_end = label_it.find("_", s_start);
@@ -658,23 +664,71 @@ namespace graphex{
 						bool pattern_present = 0;
 						for(auto&pattern_it : patterns){
 							if(pattern_it.name == label_set_name){
+
 								temp_loader_pl = new loader_pl_concept<T_tr_index_frame>;
+								
+								int outer_index_l;
+								for(size_t group_count = 0; group_count < tr_reg[tr_index_f]->place_reg.size(); group_count++){
+									if(tr_reg[tr_index_f]->place_reg[group_count] == pl_temp_f){
+										D(std::cout<<"Join match! "<<pl_temp_f<<endl;)
+										outer_index_l = group_count;
+									}
+								}
+								
+								pl_temp_f->body->labels[counter] = "!!!JOINED!!!";
+								
+								temp_loader_pl->index_l.group_index = outer_index_l;
+								temp_loader_pl->index_l.place_index = counter;
+								
 								temp_loader_pl->old_label = label_it;
 								
 								temp_loader_pl->whitelist = pattern_it.whitelist;
 								//replace the label set name with the substitution
 								label_it.replace(s_start,s_end-s_start,pattern_it.sub);
-								temp_loader_pl->new_label = label_it;
 								//add altered name to the current place concept
+								temp_loader_pl->new_label = label_it;
 								//if pattern is present, set flag
 								pattern_present = 1;
 								//set concept label set to new substitution
-								//current_place_p->label_set = pattern_it.sub;
+								temp_loader_pl->label_set = pattern_it.sub;
+								f_pl_reg.push_back(temp_loader_pl);
+								D(cout<<"Join: label set pattern match: "<<temp_loader_pl->new_label<<endl;)
+								
 							}
 						}
 					}
 					
 					counter++;
+				}
+				
+			}
+			
+			T_tr_index_frame search_result = {0,0};
+			for(auto&i : f_pl_reg){
+				D(cout<<"Join: reading concepts... "<< i->new_label<<endl;)
+				int result = find(i->new_label, i->whitelist, i->index_replace_l);
+				i->exists = 0;
+				
+				if(result != 0){
+					tr_reg[tr_index_f]->place_reg.push_back(pl_reg[result]);
+					i->index_replace_l.group_index = tr_reg[tr_index_f]->place_reg.size() - 1;
+					i->exists = 1;
+				}
+				
+				D(cout<<"-old index: "<< i->index_l.group_index<<":"<<i->index_l.place_index<<endl;)
+				D(cout<<"-new index: "<< i->index_replace_l.group_index<<":"<<i->index_replace_l.place_index<<endl;)
+			}
+			
+			for(auto&i : f_pl_reg){
+				if(i->exists == 1){
+					for(auto&k : tr_reg[tr_index_f]->body->data){
+						for(auto&j : k){
+							if(j.group_index==i->index_l.group_index && j.place_index==i->index_l.place_index){
+								j=i->index_replace_l;
+								D(cout<<"Join: found and replaced ... "<< i->new_label<<endl;)
+							}
+						}
+					}
 				}
 			}
 			

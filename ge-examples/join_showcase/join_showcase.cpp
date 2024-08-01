@@ -33,36 +33,32 @@ int main(){
 	g.attach({"x_in_1","",tp});
 	g.attach({"x_in_2","",tp});
 	
-	bool testy = 0;
-	
-	g.get(0, testy);
-	
-	cout<<"Here's testy: "<<testy<<endl;
-	
-	g.set(0, 1);
-	
-	g.get(0, testy);
-	
-	cout<<"Here's testy: "<<testy<<endl;
+	g.set(1, 1);
 	
 	#define LOOP_SIZE 10
 	
-	for (int i = 0; i < (LOOP_SIZE - 1); i++){
+	for (int i = 0; i < (LOOP_SIZE - 2); i++){
 		//assemble a single pipeline
 		g.find_pg(ti, tp);
 		ti = g.add("./pn/loop_round_part.lpn", ps{{"in","out",tp}});
 	}
 	
+	g.find_pg(ti, tp);
+	ti = g.add("./pn/loop_round_part.lpn", ps{{"out","outx",{}},{"in","out",tp}});
+	
 	//at this point we have a long pipeline with a start and an end
 	//in order to make a loop, we will need to connect the start and the
 	//end, forming a circle. We can use ::join() to make the connection
 	
-	//get the place groups of the last pipeline module
-	g.find_pg(ti, tp);
 	//get the place groups of the first pipeline module
 	g.find_pg(ti2, tp2);
-	//make a connection from ([last], to [last, first in pattern])
-	g.join(tp, ps{{"out","in",tp2}});
+	//make a connection from ([last, this], to [last -> first in pattern, that])
+	g.join(ti, ps{{"outx","in",tp2}});
+	
+	//now execute and see if counter makes it around the pipeline...
+	for(int i = 0; i< 10000; i++){
+		g.execute(Exe_mode::Random,Exe_mode::Random);
+	}
 	
 	g.print_pl();
 	

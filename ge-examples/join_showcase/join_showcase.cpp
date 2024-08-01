@@ -35,7 +35,7 @@ int main(){
 	
 	g.set(1, 1);
 	
-	#define LOOP_SIZE 10
+	#define LOOP_SIZE 100
 	
 	for (int i = 0; i < (LOOP_SIZE - 2); i++){
 		//assemble a single pipeline
@@ -53,11 +53,11 @@ int main(){
 	//get the place groups of the first pipeline module
 	g.find_pg(ti2, tp2);
 	//make a connection from ([last, this], to [last -> first in pattern, that])
-	g.join(ti, ps{{"outx","in",tp2}});
+	//g.join(ti, ps{{"outx","in",tp2}});
 	
 	//now execute and see if counter makes it around the pipeline...
-	for(int i = 0; i< 10000; i++){
-		g.execute(Exe_mode::Random,Exe_mode::Random);
+	for(int i = 0; i< 1000; i++){
+		g.execute(Exe_mode::Sequence,Exe_mode::Random);
 	}
 	
 	g.print_pl();

@@ -11,7 +11,8 @@
 #include <type_traits>
 #include <algorithm>
 #include <random>
-#include <ctime>
+//#include <ctime>
+#include <chrono>
 
 #ifndef GRAPHEX_H
 #define GRAPHEX_H
@@ -1103,8 +1104,10 @@ namespace graphex{
 			if(exe_list.size() != 0){
 				switch(mode){
 					case Exe_mode::Random:{
-						auto rng = std::default_random_engine {static_cast<unsigned long>(time(nullptr))};
+						auto time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+						auto rng = std::default_random_engine {static_cast<unsigned long>(time_seed)};
 						shuffle(exe_list.begin(),exe_list.end(),rng);
+						
 						break;
 					}
 					default:
@@ -1124,7 +1127,13 @@ namespace graphex{
 					}
 				}
 			}
-				
+			
+			//cout<<time(nullptr)<<endl;
+			
+			//for(auto&i : exe_list){
+				//cout<<"list "<<i<<endl;
+			//}
+	
 			switch(mode){
 				case Exe_mode::Sequence:
 				case Exe_mode::Random:

@@ -306,11 +306,11 @@ namespace graphex{
 			cout<<"Begin print:"<<endl;
 			int index_l_f = 0;
 			for(auto&i : pl_reg){
-				cout<<"------ Name of PL_group: "<<i->descriptor[0]<<", "<<index_l_f<<", Protection: "<<i->protection<<", Ex Index: "<<index_l_f<< ", Locked? "<<!(i->pl_lock.try_lock())<<endl;
+				cout<<"------ Name of PL_group: "<<i->descriptor[0]<<", "<<(int)index_l_f<<", Protection: "<<i->protection<<", Ex Index: "<<(int)index_l_f<< ", Locked? "<<!(i->pl_lock.try_lock())<<endl;
 				
 				int counter = 0;
 				for(auto&k : i->body->data){
-					cout<<"Label: "<<i->body->labels[counter]<<" Value: "<<k.place_type<<":"<<k.place_data<<endl;
+					cout<<"Label: "<<i->body->labels[counter]<<" Value: "<<(int)k.place_type<<":"<<(int)k.place_data<<endl;
 					counter++;
 				}
 			index_l_f++;

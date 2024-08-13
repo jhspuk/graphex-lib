@@ -24,7 +24,7 @@ int main(){
 	wl tp;			//temp place groups
 	wl tp2;
 	
-	//add the very first loop part
+	//add the very first loop part	
 	ti = g.add("./pn/loop_round_part.lpn", ps{});
 	g.find_pg(ti, tp);
 	

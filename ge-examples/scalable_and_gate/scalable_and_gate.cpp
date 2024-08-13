@@ -24,8 +24,10 @@
 using namespace graphex::petrinet;
 using namespace std;
 
+#pragma pack(1) 
+
 //choose the node size of the graph network
-typedef Graph<PL_frame<int,int>,TR_index_frame<int,int>> T_graph;
+typedef Graph<PL_frame<bool,uint8_t>,TR_index_frame<uint8_t,uint8_t>> T_graph;
 
 //recursive builder for fan in, returns indexes of leafnodes
 int r_fan_in(T_graph* pn, vector<int>& leafnodes, int depth, int previous){
@@ -81,10 +83,14 @@ int r_fan_out(T_graph* pn, vector<int>& leafnodes, int depth){
 
 int main(){
 	
-	Graph<PL_frame<int,int>,TR_index_frame<int,int>> large_and_gate;
+	T_graph large_and_gate;
 	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
+<<<<<<< HEAD
 	int pow_4 = 8; //number of modules to create (4^n)
+=======
+	int pow_4 = 10; //number of modules to create (4^n)
+>>>>>>> 4f184048fa32af330c173e6de563e85fba021810
 	
 	//set up global 'ex' or 'calculate' line (fanning out)
 	//topology requires fanning out to many AND gates
@@ -150,7 +156,7 @@ int main(){
 	for(int i = 0;i<10000000;i++){
 		for(int k = 0; k<10; k++){
 			//large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
-			large_and_gate.execute_parallel(Exe_mode::Random, Exe_mode::Sequence, 16);
+			large_and_gate.execute_parallel(Exe_mode::Random, Exe_mode::Sequence, 24);
 		}
 		large_and_gate.get(GS_ex_out, end_f);
 		if(end_f != 0){

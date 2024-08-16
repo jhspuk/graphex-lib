@@ -86,11 +86,7 @@ int main(){
 	T_graph large_and_gate;
 	int temp_tr_index; vector<int> temp_places_match; vector<int> temp_places_match_2; vector<int> temp_places_match_3;
 	
-<<<<<<< HEAD
 	int pow_4 = 8; //number of modules to create (4^n)
-=======
-	int pow_4 = 10; //number of modules to create (4^n)
->>>>>>> 4f184048fa32af330c173e6de563e85fba021810
 	
 	//set up global 'ex' or 'calculate' line (fanning out)
 	//topology requires fanning out to many AND gates

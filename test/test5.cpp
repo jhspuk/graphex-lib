@@ -9,7 +9,25 @@
 //Another large issue with the previous issue is a specific issue with
 //how cpp processes templates - the types must be specified at all levels
 //which makes writing code cumbersome. This version will take advantage 
-//of std::variant (or similar) to provide type erasure.
+//of std::variant (or similar) to provide type erasure, and therefore a neutral class can be called
+
+//This test is simply to create a number of nodes connected to one another
 
 #include <iostream>
 #include <variant>
+#include <vector>
+#include <pair>
+
+
+//concept, slow
+template <class T_payload, class T_connection>
+struct concept_node {
+	T_payload node_payload;
+	
+	std::vector<node<T_payload, T_connection>*> connections;
+	std::vector<T_connection> arc_payload;
+	
+	std::vector<std::pair<std::string,std::string>> tags;
+};
+
+//implementation, fast

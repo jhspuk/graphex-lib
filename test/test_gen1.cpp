@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <variant>
 #include <vector>
@@ -7,6 +5,7 @@
 #include <unordered_map>
 #include <random>
 #include <algorithm>
+#include <tuple>
 
 
 using namespace std;
@@ -16,20 +15,22 @@ template <class T_payload, class T_connection>
 struct gen_node {
 	T_payload node_payload;
 	
-	std::vector< gen_node<T_payload, T_connection>* > connections;
-	std::vector<T_connection*> arc_payload;
+	std::vector<std::tuple<gen_node<T_payload, T_connection>*, T_connection*>> connections;
+	std::vector<std::tuple<std::string,std::string>> tags;
 	
-	std::vector< std::pair<std::string,std::string> > tags;
+	//atomic search
+	size_t find_payload(T_payload search_term){
+		
+	}
+	
+	size_t find_connection(T_connection search_term){
+		
+	}
+	//atomic modify
+	size_t add_connection();
 };
 
-//obsolete
-template <class T_payload, class T_connection>
-struct gen_node_area{
-	std::vector< gen_node<T_payload,T_connection>* >
-	
-	std::vector< std::pair<std::string,std::string> > tags;
-};
-
+/*
 class gen_controller{
 public:
 		gen_controller();
@@ -55,6 +56,7 @@ class imp_PN_cpu{
 		execute();
 		
 };
+*/
 
 int main(){
 

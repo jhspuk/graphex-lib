@@ -20,12 +20,25 @@ struct gen_node {
 	
 };
 
+void lpn_loader(std::string path){
+	
+	using namespace std;
+	
+	ifstream file(path);
+	
+	if(!file.is_open()){
+		cerr<<"Cannot open file: "<<path<<endl;
+		return -1;
+	}
+	
+}
+
 int main(){
 	
 	using namespace std;
 	using node = gen_node<int, int>;
 	
-		
+	lpn_loader("./test_pn/g_scalable_and_gate.lpn");
 	
 	return 0;
 }

@@ -6,6 +6,10 @@
 #include <random>
 #include <algorithm>
 #include <tuple>
+#include <string>
+#include <mutex>
+#include <fstream>
+#include <sstream>
 
 template <class T_payload, class T_connection>
 struct gen_node {
@@ -20,17 +24,35 @@ struct gen_node {
 	
 };
 
-void lpn_loader(std::string path){
+class gen_node {
+	public:
+		gen_node();
+	private:
+		
+};
+
+class pn_node : public gen_node{
+	
+};
+
+int lpn_loader(std::string path, gen_node<int, int>*){
 	
 	using namespace std;
 	
 	ifstream file(path);
+	
+	unordered_map<string, gen_node<int,int>*> f_tr_map;
+	unordered_map<string, gen_node<int,int>*> f_pl_map;
+	
+	string prefix_shared = "x_";
 	
 	if(!file.is_open()){
 		cerr<<"Cannot open file: "<<path<<endl;
 		return -1;
 	}
 	
+
+	return 1;
 }
 
 int main(){
@@ -38,7 +60,9 @@ int main(){
 	using namespace std;
 	using node = gen_node<int, int>;
 	
-	lpn_loader("./test_pn/g_scalable_and_gate.lpn");
+	node * a = new node;
+	
+	lpn_loader("./test_pn/g_scalable_and_gate.lpn", a);
 	
 	return 0;
 }

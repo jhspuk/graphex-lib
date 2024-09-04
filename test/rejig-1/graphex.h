@@ -1,3 +1,16 @@
+#include <iostream>
+#include <variant>
+#include <vector>
+#include <utility>
+#include <unordered_map>
+#include <random>
+#include <algorithm>
+#include <tuple>
+#include <string>
+#include <mutex>
+#include <fstream>
+#include <sstream>
+
 #ifndef GRAPHEX_H
 #define GRAPHEX_H
 
@@ -25,88 +38,106 @@
 #define D4(x)
 #endif
 
-namespace graphex {
+namespace graphex{
 	
-	//------ENUMS begin
-	enum class result{
+	enum class e_r{
+		TRUE,
+		FALSE,
 		SUCCESS,
-		PASS,
-		REJECT,
-		LOGIC_ERROR,
-		FAILURE
+		FAILURE,
+		REDUNDANT,
+		INPUT_ERROR
 	};
-	//------ENUMS end
+
+	namespace gen_node{
 	
-	//------NODES as types
-	//generic node type
-	template <class T_payload, class T_connection>
-	struct gen_node {
-		using T_self = gen_node<T_payload, T_connection>;
+		//---GENERIC NODE DATASTRUCTURES BEGIN---
+
+		//enum for (S)ystem (L)inks - GEX uses fixed notation
+		//for executable networks, and label network
+		enum class e_sl : uint8_t {
+			//exe
+			input,
+			output,
+			input_interface,
+			output_interface,
+			//k
+			k_in_func,
+			k_out_func,
+			k_in_data,
+			k_out_data,
+			//loader
+			loader_in,
+			loader_out,
+			//reg
+			reg_in,
+			reg_out,
+			//sys
+			nc		//no connection
+		};
+
+		//base struct of generic node, used such that connection
+		//operations are independent of data payload type
+		struct gn_base{
+			std::vector<std::pair<gn_base*,e_sl>> con;
+		};
+
+		//data can be templated to any type (although small preferred)
+		template <class T_payload>
+		struct gn_data : public gn_base{
+				T_payload data;
+		};
+
+		//use of function pointers on presumed type means that the
+		//linking process must contain logic to ensure that
+		//func nodes pull from the correct data (type) nodes
+		struct gn_func : public gn_base{
+			//function pointer here...	
+			void (*func)(gn_base* ctx);
+		};
+
+		//---GENERIC NODE OPERATIONS BEGIN---
+		//operation link: given a to b, link from a to b with x
+		//and link b to a with y. If nc given, omit link - 
+		//therefore single link
+		e_r o_link(gn_base* a, gn_base* b, e_sl x, e_sl y);
 		
-		T_payload node_payload;
-		
-		std::vector<std::tuple<T_self*, T_connection*>> connections;
-		std::vector<std::tuple<std::string,std::string>> tags;
-	};
-	//------NODES end
-	
-	
-	//------LOADER OBJECTS
-	class base_loader{
-		public:
-			base_loader();
-	};
-	
-	class PN_loader : public base_loader{
-		public:
-			PN_loader();
-		
-	};
-	
-	//------LOADER OBJECTS end
-	
-	//------PAINTER OBJECTS
-	
-	class base_painter{
-		public:
-			base_painter();
-	};
-	
-	class PN_painter : public base_painter{
-		public:
-			PN_painter();
-	};
-	
-	//------PAINTER OBJECTS end
-	
-	//------IMPLEMENTATION OBJECTS
-	
-	class base_implementation{
-		public:
-			base_implementation();
+		//operation merge: given a to b, a adds all of b's 
+		//connections and then deletes b
+		e_r o_merge(gn_base* a, gn_base* b);
+
+		class gn_area{
+			public:
+				gn_area();
+				~gn_area();
+
+				virtual e_r execute();
+
+				std::vector<gn_base*> gn_reg_data;
+				std::vector<gn_base*> gn_reg_func;
+
+		};
+
+		namespace conv_petrinet{
+
+			
+			void c_add_pn(gn_base* ctx);
+
+			class pn_area : public gn_area{
+				public:
+					pn_area();
+					~pn_area();
+
+					e_r load(std::string path);
+
+					virtual e_r execute();	
+			};
+
+		}
 	}
-	
-	class PN_implementation : public base_implementation{
-		public:
-			PN_implementation();
-	}
-	
-	//------IMPLEMENTATION OBJECTS end
-	
-	//------MAIN CONTROLLER OBJECT
-	
-	class controller{
-		public:
-		
-		private:
-			base_loader();
-			base_painter();
-			base_implementation();
-	};
-	
-	//------MAIN CONTROLLER OBJECT end
-	
-};
+
+
+}
 
 
 

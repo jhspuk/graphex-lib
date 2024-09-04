@@ -110,6 +110,7 @@ namespace graphex{
 		}
 
 		e_r o_delete(gn_base* a){
+			
 			#define DEBUG_GN_ODELETE
 			#ifdef DEBUG_GN_ODELETE
 			#define D_GN_ODEL(x) x
@@ -133,6 +134,7 @@ namespace graphex{
 		}
 
 		e_r o_merge(gn_base* a, gn_base* b){
+			
 			#define DEBUG_GN_OMERGE
 			#ifdef DEBUG_GN_OMERGE
 			#define D_GN_OMG(x) x
@@ -147,13 +149,22 @@ namespace graphex{
 			auto& a_a = a->con;
 			auto& a_b = b->con;
 
+			decltype(a->con) a_temp;
+			decltype(a->con) b_temp;
+
 			for(auto& i : a_b){
 				if(i.second == e_sl::input
 					|| i.second == e_sl::output
 					|| i.second == e_sl::input_interface
 					|| i.second == e_sl::output_interface)
 				{
-					a_a.push_back(i);
+					a_temp.push_back(i);
+				}
+			}
+
+			for(auto& i : a_temp){
+				for(auto& k : i.first->con){
+					
 				}
 			}
 

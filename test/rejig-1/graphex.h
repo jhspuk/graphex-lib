@@ -106,6 +106,10 @@ namespace graphex{
 		//between a and b	
 		e_r o_unlink(gn_base* a, gn_base* b);
 
+		//operation detele: given a, delete the node, including
+		//connections in referenced nodes
+		e_r o_delete(gn_base* a);
+
 		//operation merge: given a to b, a adds all of b's 
 		//connections and then deletes b
 		e_r o_merge(gn_base* a, gn_base* b);

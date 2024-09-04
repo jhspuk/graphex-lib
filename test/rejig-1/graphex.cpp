@@ -109,6 +109,29 @@ namespace graphex{
 			return res_l;
 		}
 
+		e_r o_delete(gn_base* a){
+			#define DEBUG_GN_ODELETE
+			#ifdef DEBUG_GN_ODELETE
+			#define D_GN_ODEL(x) x
+			#else
+			#define D_GN_ODEL(x)
+			#endif
+		
+			using namespace std;
+
+			e_r res_l = e_r::SUCCESS;
+			
+			auto& a_a = a->con;
+			auto b = a_a;
+			for(auto& i : b){
+				o_unlink(a, i.first);
+			}
+
+			delete a;
+
+			return res_l;
+		}
+
 		e_r o_merge(gn_base* a, gn_base* b){
 			#define DEBUG_GN_OMERGE
 			#ifdef DEBUG_GN_OMERGE

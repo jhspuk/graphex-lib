@@ -63,24 +63,74 @@ namespace graphex{
 			
 		}
 
+		e_r o_unlink(gn_base* a, gn_base* b){
+
+			#define DEBUG_GN_OUNLINK
+			#ifdef DEBUG_GN_OUNLINK
+			#define D_GN_OUL(x) x
+			#else
+			#define D_GN_OUL(x)
+			#endif
+
+			using namespace std;
+			
+			e_r res_l = e_r::SUCCESS;
+			
+			auto& a_a = a->con;
+			auto& a_b = b->con;
+			
+			auto a_size = a_a.size();
+			auto b_size = a_b.size();
+
+			a_a.erase(
+				std::remove_if(a_a.begin(), a_a.end(), 
+						[&](const std::pair<gn_base*, e_sl>& i) {
+						return i.first == b;  // Condition to match and remove
+						}),
+					a_a.end()
+			);
+			
+			a_b.erase(
+				std::remove_if(a_b.begin(), a_b.end(), 
+						[&](const std::pair<gn_base*, e_sl>& i) {
+						return i.first == a;  // Condition to match and remove
+						}),
+					a_b.end()
+			);
+
+			if(a_size == a_a.size() && b_size == a_b.size()){
+				res_l = e_r::REDUNDANT;
+			}
+		
+			return res_l;
+		}
+
 		e_r o_merge(gn_base* a, gn_base* b){
 			#define DEBUG_GN_OMERGE
 			#ifdef DEBUG_GN_OMERGE
-			#define D_GN_MG(x) x
+			#define D_GN_OMG(x) x
 			#else
-			#define D_GN_MG(x)
+			#define D_GN_OMG(x)
 			#endif
 		
 			using namespace std;
 
 			e_r res_l = e_r::SUCCESS;
 			
+			auto& a_a = a->con;
 			auto& a_b = b->con;
 
 			for(auto& i : a_b){
-
+				if(i.second == e_sl::input
+					|| i.second == e_sl::output
+					|| i.second == e_sl::input_interface
+					|| i.second == e_sl::output_interface)
+				{
+					a_a.push_back(i);
+				}
 			}
 
+			return res_l;
 
 		}
 
@@ -93,7 +143,9 @@ namespace graphex{
 		}
 
 		e_r gn_area::execute(){
+			e_r res_l = e_r::SUCCESS;
 
+			return res_l;
 		}
 
 
@@ -130,7 +182,10 @@ namespace graphex{
 
 			}
 			e_r pn_area::execute(){
-				std::cout<<"Execute!"<<std::endl;
+				e_r res_l = e_r::SUCCESS;
+
+				return res_l;
+
 			}
 
 		}

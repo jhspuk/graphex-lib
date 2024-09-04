@@ -44,6 +44,8 @@ int main() {
 
 	z_b->func(z_b);
 
+	o_unlink(z_b, z_a);
+
 	for(auto& i : m_reg.gn_reg_data){
 		cout<<"Node: "<<i<<" Data: "<<((gn_data<int>*)i)->data<<endl;
 		for(auto& k : i->con){

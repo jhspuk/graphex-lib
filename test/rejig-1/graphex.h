@@ -69,9 +69,9 @@ namespace graphex{
 			//loader
 			loader_in,
 			loader_out,
-			//reg
-			reg_in,
-			reg_out,
+			//list
+			list_in,
+			list_out,
 			//sys
 			nc		//no connection
 		};
@@ -101,10 +101,15 @@ namespace graphex{
 		//and link b to a with y. If nc given, omit link - 
 		//therefore single link
 		e_r o_link(gn_base* a, gn_base* b, e_sl x, e_sl y);
-		
+	
+		//operation unlink: given a to b, remove all connections
+		//between a and b	
+		e_r o_unlink(gn_base* a, gn_base* b);
+
 		//operation merge: given a to b, a adds all of b's 
 		//connections and then deletes b
 		e_r o_merge(gn_base* a, gn_base* b);
+
 
 		class gn_area{
 			public:

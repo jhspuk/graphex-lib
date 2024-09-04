@@ -45,7 +45,7 @@ namespace graphex{
 			//backward link
 			if(y != e_sl::nc){
 				auto& a_b = b->con;
-				pair a_b_2 = {b,y};
+				pair a_b_2 = {a,y};
 
 				for(auto& i : a_b){
 					if(i == a_b_2){
@@ -82,6 +82,8 @@ namespace graphex{
 			auto a_size = a_a.size();
 			auto b_size = a_b.size();
 
+			//if there exists b pointer in a's connections, erase
+			//Note: regardless of system link type
 			a_a.erase(
 				std::remove_if(a_a.begin(), a_a.end(), 
 						[&](const std::pair<gn_base*, e_sl>& i) {
@@ -90,6 +92,8 @@ namespace graphex{
 					a_a.end()
 			);
 			
+			//if there exists a pointer in b's connections, erase
+			//Note: regardless of system link type
 			a_b.erase(
 				std::remove_if(a_b.begin(), a_b.end(), 
 						[&](const std::pair<gn_base*, e_sl>& i) {

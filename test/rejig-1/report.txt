@@ -1,0 +1,6 @@
+In this test, basic operations for connectivity within generic node architecture were established. Single node graph execution was also demonstrated.
+
+Improvements in next version:
+   -For area boundaries, list tracked nodes using a node itself, meaning this information is traversable, and deleted nodes are removed from this tracking.
+   -Establish Petrinet convention for execution, and also loading of networks
+   -Create new label conventions for traversal.

@@ -159,14 +159,22 @@ namespace graphex{
 					|| i.second == e_sl::output_interface)
 				{
 					a_temp.push_back(i);
+				} else {
+					o_unlink(b, i.first);
 				}
 			}
 
 			for(auto& i : a_temp){
 				for(auto& k : i.first->con){
-					
+					if(k.first == b){
+						k.first = a;
+					}	
 				}
 			}
+
+			a_a.insert(a_a.end(), a_temp.begin(), a_temp.end());
+
+			o_delete(b);
 
 			return res_l;
 

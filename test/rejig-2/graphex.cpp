@@ -258,28 +258,49 @@ namespace graphex{
 					}
 				}
 
-				atomic<bool> tally(true);	
+
+				bool exe_possible = 1;
 
 				for(auto& i : input_l){
-					if(((T_data*)(i.first))->data.load() == false){
-						tally.store(false);
+					if(((T_data*)(i.first))->data == 0){
+						exe_possible = 0;
 					}
 				}
 
+				//todo: put protection logic for interface block here...
 				for(auto& i : input_interface_l){
-					if(((T_data*)(i.first))->data.load() == false){
-						tally.store(false);
+					if(((T_data*)(i.first))->data == 0){
+						exe_possible = 0;
 					}
 				}
-				
-				for(auto& i : output_l){
+			
 
+				if(exe_possible == 1){
+
+					for(auto& i : input_l){
+						((T_data*)(i.first))->data--;
+					}
+
+					for(auto& i : input_interface_l){
+						((T_data*)(i.first))->data--;
+					}
+
+					for(auto& i : output_l){
+						//give each output one extra token, also add neighbour transitions
+						//to exe queue
+						((T_data*)i.first)->data++;
+						for(auto& k : i.first->con){
+							if(k.second == e_sl::input){
+								//put pointer in exe queue...
+							}
+						}
+					}
+
+					for(auto& i : output_interface_l){
+						((T_data*)i.first)->data++;
+					}
 				}
 
-				for(auto& i : output_interface_l){
-
-				}
-				
 				return res_l;
 			}
 

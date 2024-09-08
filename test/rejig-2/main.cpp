@@ -28,7 +28,8 @@ int main() {
 
 	gn_func* z_b;
 	z_b = new gn_func;
-	z_b->func = c_add_pn;
+	z_b->func = c_activate_pn;
+	//z_b->func = c_add_pn;
 	o_link(m_reg.gn_reg_func, z_b, e_sl::list_in, e_sl::list_out);
 
 	for(auto& i : m_reg.gn_reg_data->con){

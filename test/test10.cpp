@@ -40,7 +40,7 @@ namespace graphex{
 			void (*func)(gn_base* ctx);
 		};
 
-		void o_join(gn_base* a, gn_base* b, uint8_t mode){
+		void o_link(gn_base* a, gn_base* b, uint8_t mode){
 			switch(mode){
 				//forwards join, given a, b is output
 				case 0:
@@ -94,7 +94,6 @@ int main(){
 		z_a->data = counter++;
 		m_reg.gn_data_reg.push_back(z_a);
 	}
-
 	gn_func* z_b;
 	z_b = new gn_func;
 	z_b->func = f_add;

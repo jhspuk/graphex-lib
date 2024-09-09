@@ -134,9 +134,18 @@ namespace graphex{
 				gn_base* gn_reg_func;
 				gn_base* gn_reg_interface;
 
+				bool set_exe_spread;
+
 
 				//std::vector<gn_base*> gn_reg_data;
 				//std::vector<gn_base*> gn_reg_func;
+
+		};
+
+		class gn_interface : public gn_area{
+			public:
+				gn_interface();
+				~gn_interface();
 
 		};
 

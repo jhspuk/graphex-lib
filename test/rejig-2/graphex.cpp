@@ -179,7 +179,8 @@ namespace graphex{
 			return res_l;
 
 		}
-
+		
+		//GN AREA CLASS START---
 		gn_area::gn_area(){
 			gn_reg_data = new gn_base;
 			gn_reg_func = new gn_base;
@@ -197,8 +198,22 @@ namespace graphex{
 
 			return res_l;
 		}
+		
+		//GN AREA CLASS END---
+
+		//GN INTERFACE CLASS START---
+		
+		gn_interface::gn_interface() : gn_area(){
+				
+
+		}
+
+		gn_interface::~gn_interface(){
 
 
+		}
+
+		//GN INTERFACE CLASS END---
 		namespace conv_petrinet{
 
 			e_r c_add_pn(gn_base* ctx, gn_area*){

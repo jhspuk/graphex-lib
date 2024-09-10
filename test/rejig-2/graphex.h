@@ -63,6 +63,8 @@ namespace graphex{
 			input_interface,
 			output_interface,
 			//k
+			k_in,
+			k_out,
 			k_in_func,
 			k_out_func,
 			k_in_data,

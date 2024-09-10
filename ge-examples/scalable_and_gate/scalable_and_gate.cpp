@@ -150,7 +150,7 @@ int main(){
 	auto start = high_resolution_clock::now();
 	
 	for(int i = 0;i<10000000;i++){
-		for(int k = 0; k<10; k++){
+		for(int k = 0; k<1; k++){
 			//large_and_gate.execute(Exe_mode::Sequence, Exe_mode::Random);
 			large_and_gate.execute_parallel(Exe_mode::Random, Exe_mode::Sequence, 24);
 		}

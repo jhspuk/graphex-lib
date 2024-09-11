@@ -291,7 +291,7 @@ namespace graphex{
 				//todo: put protection logic for interface block here...
 				for(auto& i : input_interface_l){
 					for(auto& k : i.first->con){
-						if(k.second == e_sl::list_out){
+						if(k.second == e_sl::list_up){
 							interface_area_l.push_back(((gn_data<gn_area*>*)k.first)->data);
 							interface_area_l.back()->area_lock.lock();
 						}
@@ -397,7 +397,9 @@ namespace graphex{
 								while(iss >> token){
 									//transition strings are inside dummy block, read all of them into a map
 									D_PN_AL(cout<<__func__<<": state initial, transition found: "<<token<<endl;)
-									f_tr_map.insert({token,new gn_func});
+									auto temp_gn_func = new gn_func;
+									o_link(temp_gn_func, gn_reg_func, e_sl::list_up, e_sl::list_down);
+									f_tr_map.insert({token,temp_gn_func});
 									D_PN_AL(cout<<__func__<<": function node created: "<<f_tr_map.at(token)<<endl;)
 								}
 						} else if(token == ".graph"){
@@ -417,7 +419,10 @@ namespace graphex{
 							//only read lines that start with a new place string
 							if(f_tr_map.find(token) == f_tr_map.end()){
 								D_PN_AL(cout<<__func__<<": state body, place found: "<<token<<endl;)
-								f_pl_map.insert({token, new gn_data<uint8_t>});
+								auto temp_gn_data = new gn_data<uint8_t>;
+								temp_gn_data->data = 0;
+								o_link(temp_gn_data, gn_reg_data, e_sl::list_up, e_sl::list_down);
+								f_pl_map.insert({token, temp_gn_data});
 								D_PN_AL(cout<<__func__<<": data node created: "<<f_pl_map.at(token)<<endl;)
 								
 							}
@@ -430,18 +435,24 @@ namespace graphex{
 								token.erase(std::remove(token.begin(), token.end(), '{'), token.end());
 								token.erase(std::remove(token.begin(), token.end(), '}'), token.end());
 								
-								size_t s_pos = token.find("=", 0);
+								int s_pos = token.find("=", 0);
 								
 								if(s_pos != -1){
 									capacity = (uint8_t)stoi(token.substr(s_pos + 1, token.length()));
 									D_PN_AL(cout<<__func__<<": long capacity found: "<<token.substr(0, s_pos)<<" : "<<(int)capacity<<endl;)
-									
-									f_pl_map.at(token.substr(0, s_pos))->data = capacity;
+									try{
+										f_pl_map.at(token.substr(0, s_pos))->data = capacity;
+									}catch(const out_of_range& e){
+										D_PN_AL(cout<<__func__<<": out of range error in marking."<<endl;)
+									}
 								} else {
 									capacity = 1;
 									D_PN_AL(cout<<__func__<<": short capacity found: "<<token<<endl;)
-									
-									f_pl_map.at(token)->data = capacity;
+									try{
+										f_pl_map.at(token)->data = capacity;
+									}catch(const out_of_range& e){
+										D_PN_AL(cout<<__func__<<": out of range error in marking."<<endl;)
+									}
 								}
 							}
 						} else if(token == ".end"){

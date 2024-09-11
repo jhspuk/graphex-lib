@@ -73,8 +73,8 @@ namespace graphex{
 			loader_in,
 			loader_out,
 			//list
-			list_in,
-			list_out,
+			list_up,
+			list_down,
 			//sys
 			nc		//no connection
 		};

@@ -93,9 +93,9 @@ namespace graphex{
 		struct gn_data : public gn_base{
 				T_payload data;
 				
-			//	gn_data(){
-			//		data = 0;
-			//	}
+				gn_data(){
+					data = 0;
+				}
 		};
 
 		//use of function pointers on presumed type means that the

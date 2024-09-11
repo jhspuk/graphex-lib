@@ -348,6 +348,145 @@ namespace graphex{
 				return res_l;
 
 			}
+			e_r pn_area::load(std::string path){
+				
+				#define DEBUG_PN_AREA_LOAD
+				#ifdef DEBUG_PN_AREA_LOAD
+				#define D_PN_AL(x) x
+				#else
+				#define D_PN_AL(x)
+				#endif
+				
+				using namespace std;
+				
+				e_r res_l = e_r::SUCCESS;
+				
+				ifstream file(path);
+			
+				if(!file.is_open()){
+					cerr<<__func__<<": Cannot open file: "<<path<<endl;
+					return e_r::FAILURE;
+				}
+				
+				unordered_map<string, gn_func*> f_tr_map;
+				unordered_map<string, gn_data<uint8_t>*> f_pl_map;
+				
+				string line;
+				string name_f;
+				
+				bool state_initial = 1;
+				bool state_body_1 = 0;
+				bool state_body_2 = 0;
+				bool state_wait_1 = 0;
+				bool state_con_1 = 0;
+				bool state_finish = 0;
+				
+				while(getline(file,line)){
+					
+					istringstream iss(line);
+					string token;
+					iss >> token;
+					
+					if(state_initial){
+						
+						if(token == ".name"){
+							if(iss >> token){
+								name_f = token;
+							}
+						} else if(token == ".dummy"){
+								while(iss >> token){
+									//transition strings are inside dummy block, read all of them into a map
+									D_PN_AL(cout<<__func__<<": state initial, transition found: "<<token<<endl;)
+									f_tr_map.insert({token,new gn_func});
+									D_PN_AL(cout<<__func__<<": function node created: "<<f_tr_map.at(token)<<endl;)
+								}
+						} else if(token == ".graph"){
+							state_body_1 = 1;
+							state_initial = 0;
+						}
+						
+					} else if(state_body_1){
+						
+						//current line is the start of .graph section
+						if(token.rfind(".",0)==0){
+							state_body_1 = 0;
+							state_body_2 = 1;
+							//go back to the beginning of the file for another pass
+							file.seekg(0);
+						} else {
+							//only read lines that start with a new place string
+							if(f_tr_map.find(token) == f_tr_map.end()){
+								D_PN_AL(cout<<__func__<<": state body, place found: "<<token<<endl;)
+								f_pl_map.insert({token, new gn_data<uint8_t>});
+								D_PN_AL(cout<<__func__<<": data node created: "<<f_pl_map.at(token)<<endl;)
+								
+							}
+						}
+						
+					} else if(state_body_2){
+						if(token == ".marking"){
+							uint8_t capacity = 0;
+							while(iss >> token){
+								token.erase(std::remove(token.begin(), token.end(), '{'), token.end());
+								token.erase(std::remove(token.begin(), token.end(), '}'), token.end());
+								
+								size_t s_pos = token.find("=", 0);
+								
+								if(s_pos != -1){
+									capacity = (uint8_t)stoi(token.substr(s_pos + 1, token.length()));
+									D_PN_AL(cout<<__func__<<": long capacity found: "<<token.substr(0, s_pos)<<" : "<<(int)capacity<<endl;)
+									
+									f_pl_map.at(token.substr(0, s_pos))->data = capacity;
+								} else {
+									capacity = 1;
+									D_PN_AL(cout<<__func__<<": short capacity found: "<<token<<endl;)
+									
+									f_pl_map.at(token)->data = capacity;
+								}
+							}
+						} else if(token == ".end"){
+							state_body_2 = 0;
+							state_wait_1 = 1;
+							//go back to the beginning of the file for another pass
+							file.seekg(0);
+						}
+						
+					} else if(state_wait_1){
+						if(token == ".graph"){
+							state_wait_1 = 0;
+							state_con_1 = 1;
+						}
+						
+					} else if(state_con_1){
+						
+						if(f_tr_map.find(token) != f_tr_map.end()){
+							gn_func* temp_gn_func = f_tr_map.at(token);
+							
+							while(iss >> token){
+								//cout<<temp_gn_func<< " : "<< f_pl_map.at(token)<<endl;
+								o_link(temp_gn_func, f_pl_map.at(token), e_sl::output, e_sl::input);
+							}
+						} else if(f_pl_map.find(token) != f_pl_map.end()){
+							gn_data<uint8_t>* temp_gn_data = f_pl_map.at(token);
+							
+							while(iss >> token){
+								o_link(temp_gn_data, f_tr_map.at(token), e_sl::input, e_sl::output);
+							}
+						} else {
+							state_con_1 = 0;
+							state_finish = 1;
+						}
+						
+					}
+						
+				}
+				
+				D_PN_AL(cout<<__func__<<": finished reading file: "<<path<<endl;)
+				
+				return res_l;
+				
+				
+			}
 
 		}
 	}

@@ -58,11 +58,14 @@ int main() {
 	
 
 	//o_delete(z_b);
-
+	
 	for(auto& i : m_reg.gn_reg_data->con){
 		cout<<"Node: "<<i.first<<" Data: "<<((gn_data<int>*)i.first)->data<<endl;
 		for(auto& k : i.first->con){
 			cout<<k.first<<" + "<<(int)(k.second)<<endl;
+			if(k.second == e_sl::list_out){
+				cout<<"list base pointer is... "<<((gn_data<gn_area*>*)k.first)->data<<endl;
+			}
 		}
 	}
 	

@@ -132,24 +132,26 @@ namespace graphex{
 
 				virtual e_r execute();
 
-				gn_base* gn_reg_data;
-				gn_base* gn_reg_func;
+				gn_data<gn_area*>* gn_reg_data;
+				gn_data<gn_area*>* gn_reg_func;
+
+				std::vector<gn_func*> exe_list;
+
 				gn_base* gn_reg_interface;
 
 				bool set_exe_spread;
 
-
-				//std::vector<gn_base*> gn_reg_data;
-				//std::vector<gn_base*> gn_reg_func;
+				std::recursive_mutex area_lock;
 
 		};
 
-		class gn_interface : public gn_area{
-			public:
-				gn_interface();
-				~gn_interface();
+	//	class gn_interface : public gn_area{
+	//		public:
+	//			gn_interface();
+	//			~gn_interface();
 
-		};
+	//			std::recursive_mutex area_lock;
+	//	};
 
 		namespace conv_petrinet{
 

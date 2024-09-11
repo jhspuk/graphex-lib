@@ -182,8 +182,12 @@ namespace graphex{
 		
 		//GN AREA CLASS START---
 		gn_area::gn_area(){
-			gn_reg_data = new gn_base;
-			gn_reg_func = new gn_base;
+			gn_reg_data = new gn_data<gn_area*>;
+			gn_reg_func = new gn_data<gn_area*>;
+
+			gn_reg_data->data = this;
+			gn_reg_func->data = this;
+
 			gn_reg_interface = new gn_base;
 		}
 
@@ -201,17 +205,17 @@ namespace graphex{
 		
 		//GN AREA CLASS END---
 
-		//GN INTERFACE CLASS START---
-		
-		gn_interface::gn_interface() : gn_area(){
-				
+	//	//GN INTERFACE CLASS START---
+	//	
+	//	gn_interface::gn_interface() : gn_area(){
+	//			
 
-		}
+	//	}
 
-		gn_interface::~gn_interface(){
+	//	gn_interface::~gn_interface(){
 
 
-		}
+	//	}
 
 		//GN INTERFACE CLASS END---
 		namespace conv_petrinet{
@@ -276,6 +280,8 @@ namespace graphex{
 
 				bool exe_possible = 1;
 
+				vector<gn_area*> interface_area_l;
+
 				for(auto& i : input_l){
 					if(((T_data*)(i.first))->data == 0){
 						exe_possible = 0;
@@ -284,6 +290,12 @@ namespace graphex{
 
 				//todo: put protection logic for interface block here...
 				for(auto& i : input_interface_l){
+					for(auto& k : i.first->con){
+						if(k.second == e_sl::list_out){
+							interface_area_l.push_back(((gn_data<gn_area*>*)k.first)->data);
+							interface_area_l.back()->area_lock.lock();
+						}
+					}
 					if(((T_data*)(i.first))->data == 0){
 						exe_possible = 0;
 					}
@@ -301,7 +313,7 @@ namespace graphex{
 					}
 
 					for(auto& i : output_l){
-						//give each output one extra token, also add neighbour transitions
+						//give each output one token, also add neighbour transitions
 						//to exe queue
 						((T_data*)i.first)->data++;
 						for(auto& k : i.first->con){
@@ -313,6 +325,10 @@ namespace graphex{
 
 					for(auto& i : output_interface_l){
 						((T_data*)i.first)->data++;
+					}
+
+					for(auto& i : interface_area_l){
+						i->area_lock.unlock();
 					}
 				}
 

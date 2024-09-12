@@ -153,12 +153,26 @@ namespace graphex{
 		template <class T>
 		e_r o_s_is(gn_base* a, e_sl b, T term){
 
+			#define DEBUG_O_S_IS
+			#ifdef DEBUG_O_S_IS
+			#define D_O_S_IS(x) x
+			#else
+			#define D_O_S_IS(x)
+			#endif
+
+			using namespace std;
+
 			e_r res_l = e_r::FAILURE;
 
 			for(auto& i : a->con){
+				D_O_S_IS(cout<<__func__<<": Searching... "<<i.first<<endl;)
 				if(i.second == b){
+					D_O_S_IS(cout<<"Found: "<< ((gn_data<T>*)i.first)->data<<endl;)
+					D_O_S_IS(cout<<"For term: "<<term<<endl;)
 					if(term == ((gn_data<T>*)i.first)->data){
-						res_l == e_r::TRUE;
+
+						D_O_S_IS(cout<<__func__<<": Match! "<< ((gn_data<T>*)i.first)->data<<endl;)
+						res_l = e_r::TRUE;
 						return res_l;
 					}
 				}		

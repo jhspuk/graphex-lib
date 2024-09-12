@@ -183,7 +183,9 @@ namespace graphex{
 		//GN AREA CLASS START---
 		gn_area::gn_area(){
 			gn_reg_data = new gn_data<gn_area*>;
+			o_l_is(gn_reg_data, e_sl::label, e_l::data_list);
 			gn_reg_func = new gn_data<gn_area*>;
+			o_l_is(gn_reg_func, e_sl::label, e_l::func_list);
 
 			gn_reg_data->data = this;
 			gn_reg_func->data = this;
@@ -397,9 +399,17 @@ namespace graphex{
 								while(iss >> token){
 									//transition strings are inside dummy block, read all of them into a map
 									D_PN_AL(cout<<__func__<<": state initial, transition found: "<<token<<endl;)
+
 									auto temp_gn_func = new gn_func;
+
+									//label node...
+									o_l_is(temp_gn_func, e_sl::conv_label, e_l::transition);
+
+									//add to rack function list...
 									o_link(temp_gn_func, gn_reg_func, e_sl::list_up, e_sl::list_down);
+
 									f_tr_map.insert({token,temp_gn_func});
+
 									D_PN_AL(cout<<__func__<<": function node created: "<<f_tr_map.at(token)<<endl;)
 								}
 						} else if(token == ".graph"){
@@ -419,9 +429,18 @@ namespace graphex{
 							//only read lines that start with a new place string
 							if(f_tr_map.find(token) == f_tr_map.end()){
 								D_PN_AL(cout<<__func__<<": state body, place found: "<<token<<endl;)
+
 								auto temp_gn_data = new gn_data<uint8_t>;
+
+								//label node...
+								o_l_is(temp_gn_data, e_sl::conv_label, e_l::place);
+								o_l_is(temp_gn_data, e_sl::name, token);
+								//initialise to zero
 								temp_gn_data->data = 0;
+
+								//add to rack data list
 								o_link(temp_gn_data, gn_reg_data, e_sl::list_up, e_sl::list_down);
+								
 								f_pl_map.insert({token, temp_gn_data});
 								D_PN_AL(cout<<__func__<<": data node created: "<<f_pl_map.at(token)<<endl;)
 								
@@ -490,6 +509,10 @@ namespace graphex{
 						
 					}
 						
+				}
+
+				if(!state_finish){
+					D_PN_AL(cerr<<__func__<<": error, unexpected exit!"<<path<<endl;)
 				}
 				
 				D_PN_AL(cout<<__func__<<": finished reading file: "<<path<<endl;)

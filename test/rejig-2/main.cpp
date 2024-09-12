@@ -65,9 +65,12 @@ int main() {
 		cout<<"Node: "<<i.first<<" Data: "<<(int)((gn_data<uint8_t>*)i.first)->data<<endl;
 		for(auto& k : i.first->con){
 			cout<<k.first<<" + "<<(int)(k.second)<<endl;
-			if(k.second == e_sl::list_up){
-				cout<<"list base pointer is... "<<((gn_data<gn_area*>*)k.first)->data<<endl;
+			if(o_s_is(k.first, e_sl::name, "p3") == e_r::TRUE){
+				cout<<i.first<<" is p1!"<<endl;
 			}
+		//	if(k.second == e_sl::list_up){
+		//		cout<<"list base pointer is... "<<((gn_data<gn_area*>*)k.first)->data<<endl;
+		//	}
 		}
 	}
 	

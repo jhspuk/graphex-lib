@@ -62,6 +62,12 @@ namespace graphex{
 			output,
 			input_interface,
 			output_interface,
+			//label
+			label,
+			gen_label,
+			conv_label,
+			//identity
+			name,			
 			//k
 			k_in,
 			k_out,
@@ -79,6 +85,13 @@ namespace graphex{
 			nc		//no connection
 		};
 
+		enum class e_l : uint8_t {
+			rack,
+			interface,
+			func_list,
+			data_list
+		};
+
 		//forward declarations
 		class gn_area;
 
@@ -94,7 +107,7 @@ namespace graphex{
 				T_payload data;
 				
 				gn_data(){
-					data = 0;
+					data = {};
 				}
 		};
 
@@ -123,6 +136,39 @@ namespace graphex{
 		//operation merge: given a to b, a adds all of b's 
 		//connections and then deletes b
 		e_r o_merge(gn_base* a, gn_base* b);
+
+		template <class T>
+		e_r o_l_is(gn_base* a, e_sl b, T term){
+			
+			e_r res_l = e_r::SUCCESS;
+
+			gn_data<T>* label = new gn_data<T>;
+			label->data = term;
+
+			res_l = o_link(a, label, b, e_sl::nc);
+
+			return res_l;
+		}
+
+		template <class T>
+		e_r o_s_is(gn_base* a, e_sl b, T term){
+
+			e_r res_l = e_r::FAILURE;
+
+			for(auto& i : a->con){
+				if(i.second == b){
+					if(term == ((gn_data<T>*)i.first)->data){
+						res_l == e_r::TRUE;
+						return res_l;
+					}
+				}		
+			}
+
+			res_l = e_r::FALSE;
+
+			return res_l;
+		}
+			
 
 
 		class gn_area{
@@ -153,10 +199,29 @@ namespace graphex{
 	//			std::recursive_mutex area_lock;
 	//	};
 
+		class controller{
+			public:
+				controller();
+				~controller();
+
+				gn_data<controller*> reg_area;
+				gn_data<controller*> reg_interface;
+
+				size_t add_rack(gn_area*);
+
+
+		};
+
 		namespace conv_petrinet{
 
 			//forward declarations
 			class pn_area;
+
+			enum class e_l : uint8_t {
+				transition,
+				place,
+				interface
+			};
 			
 			e_r c_add_pn(gn_base* ctx, gn_area* area);
 

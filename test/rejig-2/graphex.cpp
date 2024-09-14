@@ -2,7 +2,6 @@
 #include <iostream>
 
 namespace graphex{
-
 	namespace gen_node{
 	
 		e_r o_link(gn_base* a, gn_base* b, e_sl x, e_sl y){
@@ -175,6 +174,77 @@ namespace graphex{
 			a_a.insert(a_a.end(), a_temp.begin(), a_temp.end());
 
 			o_delete(b);
+
+			return res_l;
+
+		}
+		
+		e_r o_s_name(gn_base* a, std::string& name){
+
+			//#define DEBUG_O_S_NAME
+			#ifdef DEBUG_O_S_NAME
+			#define D_O_S_N(x) x
+			#else
+			#define D_O_S_N(x)
+			#endif
+
+			using namespace std;
+
+			e_r res_l = e_r::FAILURE;
+			D_O_S_N(cout<<__func__<<" begin: "<<a<<endl;)
+			for(auto& i : a->con){
+				
+				D_O_S_N(cout<<__func__<<" "<<a->con.size()<<" : "<<i.first<<endl;)
+				
+				if(i.second == e_sl::name){
+					res_l = e_r::SUCCESS;
+					name = ((gn_data<string>*)i.first)->data;
+				}
+			}
+
+			return res_l;
+
+		}
+
+		e_r o_p_list(gn_base* a){
+		
+			using namespace std;
+
+			e_r res_l = e_r::SUCCESS;
+
+			decltype(a->con) a_a;
+
+			string name = "None";
+			string name_2 = "None";
+
+			o_s_name(a, name);
+			cout<<"Begin list print: "<<name<<" with pointer : "<<a<<endl;
+
+			name = "None";
+
+			for(auto& i : a->con){
+				if(i.second == e_sl::list_down){
+				//	for(auto& k : i.first->con){
+				//		if(k.second == e_sl::name){
+				//			name = ((gn_data<string>*)k.first)->data;
+				//		}
+				//		a_a.push_back(k);
+				//	}
+					
+					o_s_name(i.first, name);
+
+					cout<<"----------------------------------------"<<endl;
+					cout<<"Node: "<<name<<" with pointer: "<<i.first<<endl;
+					
+					for(auto& k : i.first->con){
+						name_2 = "None";
+						o_s_name(k.first, name_2);
+						cout<<" +connection to... "<<(int)k.second<<" "<<name_2<<" with pointer: "<<k.first<<endl;
+					}
+						
+					cout<<"----------------------------------------"<<endl;
+				}
+			}
 
 			return res_l;
 
@@ -404,7 +474,7 @@ namespace graphex{
 
 									//label node...
 									o_l_is(temp_gn_func, e_sl::conv_label, e_l::transition);
-
+									o_l_is(temp_gn_func, e_sl::name, token);
 									//add to rack function list...
 									o_link(temp_gn_func, gn_reg_func, e_sl::list_up, e_sl::list_down);
 

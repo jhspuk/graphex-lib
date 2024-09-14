@@ -19,6 +19,10 @@ int main() {
 	
 	m_reg.load("multinet_format.lpn");
 
+	o_p_list(m_reg.gn_reg_data);
+	o_p_list(m_reg.gn_reg_func);
+
+
 	//int counter = 5;
 	//gn_data<int>* z_a;
 
@@ -60,7 +64,7 @@ int main() {
 	
 
 	////o_delete(z_b);
-	
+	/*	
 	for(auto& i : m_reg.gn_reg_data->con){
 		cout<<"Node: "<<i.first<<" Data: "<<(int)((gn_data<uint8_t>*)i.first)->data<<endl;
 		for(auto& k : i.first->con){
@@ -84,6 +88,8 @@ int main() {
 			cout<<k.first<<" + "<<(int)(k.second)<<endl;
 		}
 	}
+
+	*/
 	
 	cout<<"complete"<<endl;
 

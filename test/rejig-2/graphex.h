@@ -136,7 +136,8 @@ namespace graphex{
 		//operation merge: given a to b, a adds all of b's 
 		//connections and then deletes b
 		e_r o_merge(gn_base* a, gn_base* b);
-
+		
+		//single linked label using term and system link b
 		template <class T>
 		e_r o_l_is(gn_base* a, e_sl b, T term){
 			
@@ -150,6 +151,7 @@ namespace graphex{
 			return res_l;
 		}
 
+		//operation search is: is node a labelled with connection b and label term?
 		template <class T>
 		e_r o_s_is(gn_base* a, e_sl b, T term){
 
@@ -182,8 +184,9 @@ namespace graphex{
 
 			return res_l;
 		}
-			
-
+		
+		//operation print list: Print entire list of nodes, including names	
+		e_r o_p_list(gn_base* a);
 
 		class gn_area{
 			public:

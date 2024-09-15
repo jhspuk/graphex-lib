@@ -570,7 +570,7 @@ namespace graphex{
 							gn_data<uint8_t>* temp_gn_data = f_pl_map.at(token);
 							
 							while(iss >> token){
-								o_link(temp_gn_data, f_tr_map.at(token), e_sl::input, e_sl::output);
+								o_link(temp_gn_data, f_tr_map.at(token), e_sl::output, e_sl::input);
 							}
 						} else {
 							state_con_1 = 0;
@@ -580,7 +580,7 @@ namespace graphex{
 					}
 						
 				}
-
+			
 				if(!state_finish){
 					D_PN_AL(cerr<<__func__<<": error, unexpected exit!"<<path<<endl;)
 				}

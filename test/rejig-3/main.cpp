@@ -18,7 +18,8 @@ int main() {
 
 	pn_area m_reg;
 	
-	m_reg.load("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn");
+	//m_reg.load("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn");
+	m_reg.load("/home/h/Documents/workspace/git/tsetlin-machine-petrinet/components/concepts/arg_max/argmax_complete_demo.lpn");
 	//m_reg.load("pipe_test.lpn");
 
 	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
@@ -36,6 +37,7 @@ int main() {
 
 	auto t_start = std::chrono::high_resolution_clock::now();	
 	while(m_reg.gn_reg_exe->con.size() > 0){
+		//cout<<"executing..."<<endl;
 		m_reg.execute();
 	}
 	auto t_end = std::chrono::high_resolution_clock::now();

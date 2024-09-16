@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include "graphex.h"
 
@@ -17,11 +18,45 @@ int main() {
 
 	pn_area m_reg;
 	
-	m_reg.load("multinet_format.lpn");
+	m_reg.load("tmCompletePetriNetDemo.lpn");
 
-	o_p_list(m_reg.gn_reg_data);
-	o_p_list(m_reg.gn_reg_func);
+	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
+	o_p_list<int>(m_reg.gn_reg_func, 0);
 
+	for(auto& i : m_reg.gn_reg_func->con){
+		if(i.second == e_sl::list_down){
+			o_link(m_reg.gn_reg_exe, i.first, e_sl::list_down, e_sl::nc);
+		}
+	}
+
+	o_p_list<int>(m_reg.gn_reg_exe, 0);
+
+	auto t_start = std::chrono::high_resolution_clock::now();	
+	while(m_reg.gn_reg_exe->con.size() > 0){
+		m_reg.execute();
+	}
+	auto t_end = std::chrono::high_resolution_clock::now();
+	double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end-t_start).count();
+
+
+	cout<<elapsed_time_ms<<" ms"<<endl;
+
+	/*
+	for(int i = 0; i < 100; i++){
+
+		m_reg.execute();
+		cout<<"STEP:"<<endl;
+
+
+		o_p_list<int>(m_reg.gn_reg_exe, 0);
+
+	}
+	*/
+
+	//o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
+	//o_p_list<int>(m_reg.gn_reg_func, 0);
+
+	//o_p_list<int>(m_reg.gn_reg_exe, 0);
 
 	//int counter = 5;
 	//gn_data<int>* z_a;

@@ -6,7 +6,7 @@ namespace graphex{
 	
 		e_r o_link(gn_base* a, gn_base* b, e_sl x, e_sl y){
 	
-			#define DEBUG_GN_OLINK
+			//#define DEBUG_GN_OLINK
 			#ifdef DEBUG_GN_OLINK
 			#define D_GN_OL(x) x
 			#else
@@ -206,49 +206,7 @@ namespace graphex{
 
 		}
 
-		e_r o_p_list(gn_base* a){
 		
-			using namespace std;
-
-			e_r res_l = e_r::SUCCESS;
-
-			decltype(a->con) a_a;
-
-			string name = "None";
-			string name_2 = "None";
-
-			o_s_name(a, name);
-			cout<<"Begin list print: "<<name<<" with pointer : "<<a<<endl;
-
-			name = "None";
-
-			for(auto& i : a->con){
-				if(i.second == e_sl::list_down){
-				//	for(auto& k : i.first->con){
-				//		if(k.second == e_sl::name){
-				//			name = ((gn_data<string>*)k.first)->data;
-				//		}
-				//		a_a.push_back(k);
-				//	}
-					
-					o_s_name(i.first, name);
-
-					cout<<"----------------------------------------"<<endl;
-					cout<<"Node: "<<name<<" with pointer: "<<i.first<<endl;
-					
-					for(auto& k : i.first->con){
-						name_2 = "None";
-						o_s_name(k.first, name_2);
-						cout<<" +connection to... "<<(int)k.second<<" "<<name_2<<" with pointer: "<<k.first<<endl;
-					}
-						
-					cout<<"----------------------------------------"<<endl;
-				}
-			}
-
-			return res_l;
-
-		}
 		
 		//GN AREA CLASS START---
 		gn_area::gn_area(){
@@ -256,17 +214,21 @@ namespace graphex{
 			o_l_is(gn_reg_data, e_sl::label, e_l::data_list);
 			gn_reg_func = new gn_data<gn_area*>;
 			o_l_is(gn_reg_func, e_sl::label, e_l::func_list);
+			gn_reg_exe = new gn_data<gn_area*>;
+			o_l_is(gn_reg_func, e_sl::label, e_l::exe_list);
+
 
 			gn_reg_data->data = this;
 			gn_reg_func->data = this;
 
-			gn_reg_interface = new gn_base;
+			gn_k_rack = new gn_base;
 		}
 
 		gn_area::~gn_area(){
 			o_delete(gn_reg_data);	
-			o_delete(gn_reg_func);	
-			o_delete(gn_reg_interface);	
+			o_delete(gn_reg_func);
+			o_delete(gn_reg_exe);
+			o_delete(gn_k_rack);	
 		}
 
 		e_r gn_area::execute(){
@@ -317,11 +279,11 @@ namespace graphex{
 
 			e_r c_activate_pn(gn_base* ctx, gn_area*){
 
-				#define DEBUG_GN_OMERGE
-				#ifdef DEBUG_GN_OMERGE
-				#define D_GN_OMG(x) x
+				//define DEBUG_C_ACT_PN
+				#ifdef DEBUG_C_ACT_PN
+				#define D_C_ACT(x) x
 				#else
-				#define D_GN_OMG(x)
+				#define D_C_ACT(x)
 				#endif
 		
 				using namespace std;
@@ -336,6 +298,8 @@ namespace graphex{
 				decltype(ctx->con) input_interface_l;
 				decltype(ctx->con) output_interface_l;
 
+				D_C_ACT(cout<<__func__<<": begin..."<<endl;)
+
 				//acquisition
 				for(auto& i : a_a){
 					if(i.second == e_sl::input){
@@ -348,7 +312,8 @@ namespace graphex{
 						output_interface_l.push_back(i);
 					}
 				}
-
+				
+				D_C_ACT(cout<<__func__<<": acquired "<<input_l.size()<<" : "<<output_l.size()<<" : "<<input_interface_l.size()<<" : "<<output_interface_l.size()<<endl;)
 
 				bool exe_possible = 1;
 
@@ -377,26 +342,63 @@ namespace graphex{
 				if(exe_possible == 1){
 
 					for(auto& i : input_l){
+
 						((T_data*)(i.first))->data--;
+
+						for(auto& k : i.first->con){
+							if(k.second == e_sl::output){
+								for(auto& j : k.first->con){
+									if(j.second == e_sl::list_up){
+										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+										//((gn_data<gn_area*>*)j.first)->data->gn_reg_exe->con.push_back({k.first, e_sl::list_down}); //.push_back(i.first);
+									}
+								}
+							}
+						}
 					}
 
 					for(auto& i : input_interface_l){
 						((T_data*)(i.first))->data--;
+
+						for(auto& k : i.first->con){
+							if(k.second == e_sl::output){
+								for(auto& j : k.first->con){
+									if(j.second == e_sl::list_up){
+										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+									}
+								}
+							}
+						}
 					}
 
 					for(auto& i : output_l){
 						//give each output one token, also add neighbour transitions
 						//to exe queue
 						((T_data*)i.first)->data++;
+
 						for(auto& k : i.first->con){
-							if(k.second == e_sl::input){
-								//put pointer in exe queue...
+							if(k.second == e_sl::output){
+								for(auto& j : k.first->con){
+									if(j.second == e_sl::list_up){
+										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+									}
+								}
 							}
 						}
 					}
 
 					for(auto& i : output_interface_l){
 						((T_data*)i.first)->data++;
+
+						for(auto& k : i.first->con){
+							if(k.second == e_sl::output){
+								for(auto& j : k.first->con){
+									if(j.second == e_sl::list_up){
+										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+									}
+								}
+							}
+						}
 					}
 
 					for(auto& i : interface_area_l){
@@ -415,7 +417,22 @@ namespace graphex{
 
 			}
 			e_r pn_area::execute(){
+				
+				using namespace std;
+
 				e_r res_l = e_r::SUCCESS;
+
+				auto reg_exe_buffer = gn_reg_exe->con;
+				gn_reg_exe->con.erase(gn_reg_exe->con.begin() + 1, gn_reg_exe->con.end());
+
+				for(auto& i : reg_exe_buffer){
+					if(i.second == e_sl::list_down){
+						o_unlink(gn_reg_exe, i.first);
+						((gn_func*)i.first)->func(i.first, (gn_area*)this);
+					}
+				}
+
+
 
 				return res_l;
 
@@ -471,6 +488,8 @@ namespace graphex{
 									D_PN_AL(cout<<__func__<<": state initial, transition found: "<<token<<endl;)
 
 									auto temp_gn_func = new gn_func;
+
+									temp_gn_func->func = c_activate_pn;
 
 									//label node...
 									o_l_is(temp_gn_func, e_sl::conv_label, e_l::transition);

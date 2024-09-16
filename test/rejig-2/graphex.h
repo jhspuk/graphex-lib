@@ -253,6 +253,8 @@ namespace graphex{
 
 				gn_base* gn_k_rack;
 
+				std::mt19937 random_generator;
+
 				bool set_exe_spread;
 
 				std::recursive_mutex area_lock;
@@ -296,6 +298,11 @@ namespace graphex{
 				place,
 				interface
 			};
+
+			enum class e_e : uint8_t{
+				ordered,
+				random
+			};
 			
 			e_r c_add_pn(gn_base* ctx, gn_area* area);
 
@@ -307,6 +314,8 @@ namespace graphex{
 					~pn_area();
 
 					e_r load(std::string path);
+
+					e_e exe_mode;
 
 					virtual e_r execute();	
 			};

@@ -209,7 +209,7 @@ namespace graphex{
 		
 		
 		//GN AREA CLASS START---
-		gn_area::gn_area(){
+		gn_area::gn_area() : random_generator(std::random_device{}()){
 			gn_reg_data = new gn_data<gn_area*>;
 			o_l_is(gn_reg_data, e_sl::label, e_l::data_list);
 			gn_reg_func = new gn_data<gn_area*>;
@@ -364,7 +364,10 @@ namespace graphex{
 							if(k.second == e_sl::output){
 								for(auto& j : k.first->con){
 									if(j.second == e_sl::list_up){
-										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+										auto& k_rack_l = ((gn_data<gn_area*>*)j.first)->data->gn_k_rack;
+										for(auto& v : k_rack_l->con){
+
+										}
 									}
 								}
 							}
@@ -425,10 +428,22 @@ namespace graphex{
 				auto reg_exe_buffer = gn_reg_exe->con;
 				gn_reg_exe->con.erase(gn_reg_exe->con.begin() + 1, gn_reg_exe->con.end());
 
-				for(auto& i : reg_exe_buffer){
-					if(i.second == e_sl::list_down){
-						o_unlink(gn_reg_exe, i.first);
-						((gn_func*)i.first)->func(i.first, (gn_area*)this);
+				if(exe_mode == e_e::ordered){
+
+					for(auto& i : reg_exe_buffer){
+						if(i.second == e_sl::list_down){
+							o_unlink(gn_reg_exe, i.first);
+							((gn_func*)i.first)->func(i.first, (gn_area*)this);
+						}
+					}
+
+				} else if(exe_mode == e_e::random){
+					shuffle(reg_exe_buffer.begin(), reg_exe_buffer.end(), random_generator);
+					for(auto& i : reg_exe_buffer){
+						if(i.second == e_sl::list_down){
+							o_unlink(gn_reg_exe, i.first);
+							((gn_func*)i.first)->func(i.first, (gn_area*)this);
+						}
 					}
 				}
 

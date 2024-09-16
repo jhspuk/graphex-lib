@@ -18,10 +18,13 @@ int main() {
 
 	pn_area m_reg;
 	
-	m_reg.load("tmCompletePetriNetDemo.lpn");
+	//m_reg.load("tmCompletePetriNetDemo.lpn");
+	m_reg.load("pipe_test.lpn");
 
 	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
 	o_p_list<int>(m_reg.gn_reg_func, 0);
+
+	m_reg.exe_mode = e_e::random;
 
 	for(auto& i : m_reg.gn_reg_func->con){
 		if(i.second == e_sl::list_down){
@@ -53,8 +56,8 @@ int main() {
 	}
 	*/
 
-	//o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
-	//o_p_list<int>(m_reg.gn_reg_func, 0);
+	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
+	o_p_list<int>(m_reg.gn_reg_func, 0);
 
 	//o_p_list<int>(m_reg.gn_reg_exe, 0);
 

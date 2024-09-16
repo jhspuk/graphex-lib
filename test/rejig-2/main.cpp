@@ -24,7 +24,7 @@ int main() {
 	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
 	o_p_list<int>(m_reg.gn_reg_func, 0);
 
-	m_reg.exe_mode = e_e::random;
+	m_reg.exe_mode = e_e::ordered;
 
 	for(auto& i : m_reg.gn_reg_func->con){
 		if(i.second == e_sl::list_down){
@@ -56,8 +56,8 @@ int main() {
 	}
 	*/
 
-	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
-	o_p_list<int>(m_reg.gn_reg_func, 0);
+	//o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
+	//o_p_list<int>(m_reg.gn_reg_func, 0);
 
 	//o_p_list<int>(m_reg.gn_reg_exe, 0);
 

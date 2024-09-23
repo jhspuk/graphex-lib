@@ -18,8 +18,8 @@ int main() {
 
 	pn_area m_reg;
 	
-	//m_reg.load("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn");
-	m_reg.load("/home/h/Documents/workspace/git/tsetlin-machine-petrinet/components/concepts/arg_max/argmax_complete_demo.lpn");
+	m_reg.load("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn");
+	//m_reg.load("/home/h/Documents/workspace/git/tsetlin-machine-petrinet/components/concepts/arg_max/argmax_complete_demo.lpn");
 	//m_reg.load("pipe_test.lpn");
 
 	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);

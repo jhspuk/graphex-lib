@@ -240,6 +240,7 @@ namespace graphex{
 			return res_l;
 		}
 
+		inline e_r o_i_update(gn_base* a);
 
 		class gn_area{
 			public:
@@ -253,7 +254,7 @@ namespace graphex{
 
 				gn_data<gn_area*>* gn_reg_exe;
 
-				gn_base* gn_k_rack;
+				gn_data<gn_area*>* gn_k_rack;
 
 				std::mt19937 random_generator;
 

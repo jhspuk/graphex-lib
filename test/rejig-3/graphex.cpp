@@ -206,6 +206,20 @@ namespace graphex{
 
 		}
 
+		inline e_r o_i_update(gn_base* a){
+
+			using namespace std;
+
+			e_r res_l = e_r::SUCCESS;
+
+			for(auto& i : a->con){
+				if(i.second == e_sl::list_up){
+					o_link(((gn_data<gn_area*>*)i.first)->data->gn_reg_exe, a, e_sl::list_down, e_sl::nc);
+				}
+			}
+			
+			return res_l;
+		}
 		
 		
 		//GN AREA CLASS START---
@@ -221,7 +235,7 @@ namespace graphex{
 			gn_reg_data->data = this;
 			gn_reg_func->data = this;
 
-			gn_k_rack = new gn_base;
+			gn_k_rack = new gn_data<gn_area*>;
 
 			is_complete = 0;
 		}
@@ -262,7 +276,7 @@ namespace graphex{
 				
 				e_r res_l = e_r::SUCCESS;
 				
-				T_data* output;
+				T_data* output = {};
 
 				int acc = 0;
 
@@ -373,11 +387,12 @@ namespace graphex{
 
 					for(auto& i : input_interface_l){
 						((T_data*)(i.first))->data--;
-						for(auto& k : i.first->con){
-							if(k.second == e_sl::list_up){
-								o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
-							}
-						}
+						o_i_update(i.first);
+						//for(auto& k : i.first->con){
+						//	if(k.second == e_sl::list_up){
+						//		o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+						//	}
+						//}
 						//for(auto& k : i.first->con){
 						//	if(k.second == e_sl::output){
 						//		for(auto& j : k.first->con){
@@ -411,11 +426,12 @@ namespace graphex{
 
 					for(auto& i : output_interface_l){
 						((T_data*)i.first)->data++;
-						for(auto& k : i.first->con){
-							if(k.second == e_sl::list_up){
-								o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
-							}
-						}
+						o_i_update(i.first);
+						//for(auto& k : i.first->con){
+						//	if(k.second == e_sl::list_up){
+						//		o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+						//	}
+						//}
 						//for(auto& k : i.first->con){
 						//	if(k.second == e_sl::output){
 								//for(auto& j : k.first->con){
@@ -450,23 +466,26 @@ namespace graphex{
 
 				auto reg_exe_buffer = gn_reg_exe->con;
 
+				
+
+
 				//if there has been change, add all implicated transitions (pre calculated) from link
 				//into exe buffer
-				for(auto& i : gn_k_rack->con){
-					if(i.second == e_sl::k_rack_int){
-						auto area_link_l = ((gn_data<gn_area_link*>*)i.first)->data;
-						if(area_link_l->change == 1){
-							for(auto& j : area_link_l->gn_reg_func->con){
-								if(j.second == e_sl::list_down){
-									reg_exe_buffer.push_back({j.first, j.second});
-								}
-							}	
-						}
-						area_link_l->link_lock.lock();
-						area_link_l->change = 0;
-						area_link_l->link_lock.unlock();
-					}
-				}
+				//for(auto& i : gn_k_rack->con){
+				//	if(i.second == e_sl::k_rack_int){
+				//		auto area_link_l = ((gn_data<gn_area_link*>*)i.first)->data;
+				//		if(area_link_l->change == 1){
+				//			for(auto& j : area_link_l->gn_reg_func->con){
+				//				if(j.second == e_sl::list_down){
+				//					reg_exe_buffer.push_back({j.first, j.second});
+				//				}
+				//			}	
+				//		}
+				//		area_link_l->link_lock.lock();
+				//		area_link_l->change = 0;
+				//		area_link_l->link_lock.unlock();
+				//	}
+				//}
 
 				//if there is nothing in the buffer to be processed, quit immediately
 				if(reg_exe_buffer.size()==0){

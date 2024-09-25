@@ -279,7 +279,7 @@ namespace graphex{
 				return res_l;
 			} 
 
-			e_r c_activate_pn(gn_base* ctx, gn_area*){
+			e_r c_activate_pn(gn_base* ctx, gn_area* area_l){
 
 				//define DEBUG_C_ACT_PN
 				#ifdef DEBUG_C_ACT_PN
@@ -360,31 +360,36 @@ namespace graphex{
 
 						for(auto& k : i.first->con){
 							if(k.second == e_sl::output){
-								for(auto& j : k.first->con){
-									if(j.second == e_sl::list_up){
-										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
-										//((gn_data<gn_area*>*)j.first)->data->gn_reg_exe->con.push_back({k.first, e_sl::list_down}); //.push_back(i.first);
-									}
-								}
+								//for(auto& j : k.first->con){
+								//	if(j.second == e_sl::list_up){
+								//		o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+								//		//((gn_data<gn_area*>*)j.first)->data->gn_reg_exe->con.push_back({k.first, e_sl::list_down}); //.push_back(i.first);
+								//	}
+								//}
+								o_link(area_l->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
 							}
 						}
 					}
 
 					for(auto& i : input_interface_l){
 						((T_data*)(i.first))->data--;
-
 						for(auto& k : i.first->con){
-							if(k.second == e_sl::output){
-								for(auto& j : k.first->con){
-									if(j.second == e_sl::list_up){
-										auto& k_rack_l = ((gn_data<gn_area*>*)j.first)->data->gn_k_rack;
-										for(auto& v : k_rack_l->con){
-
-										}
-									}
-								}
+							if(k.second == e_sl::list_up){
+								o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
 							}
 						}
+						//for(auto& k : i.first->con){
+						//	if(k.second == e_sl::output){
+						//		for(auto& j : k.first->con){
+						//			if(j.second == e_sl::list_up){
+						//				auto& k_rack_l = ((gn_data<gn_area*>*)j.first)->data->gn_k_rack;
+						//				for(auto& v : k_rack_l->con){
+
+						//				}
+						//			}
+						//		}
+						//	}
+						//}
 					}
 
 					for(auto& i : output_l){
@@ -394,27 +399,32 @@ namespace graphex{
 
 						for(auto& k : i.first->con){
 							if(k.second == e_sl::output){
-								for(auto& j : k.first->con){
-									if(j.second == e_sl::list_up){
-										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
-									}
-								}
+								//for(auto& j : k.first->con){
+								//	if(j.second == e_sl::list_up){
+								//		o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+								//	}
+								//}
+								o_link(area_l->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
 							}
 						}
 					}
 
 					for(auto& i : output_interface_l){
 						((T_data*)i.first)->data++;
-
 						for(auto& k : i.first->con){
-							if(k.second == e_sl::output){
-								for(auto& j : k.first->con){
-									if(j.second == e_sl::list_up){
-										o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
-									}
-								}
+							if(k.second == e_sl::list_up){
+								o_link(((gn_data<gn_area*>*)k.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
 							}
 						}
+						//for(auto& k : i.first->con){
+						//	if(k.second == e_sl::output){
+								//for(auto& j : k.first->con){
+								//	if(j.second == e_sl::list_up){
+								//		o_link(((gn_data<gn_area*>*)j.first)->data->gn_reg_exe, k.first, e_sl::list_down, e_sl::nc);
+								//	}
+								//}
+						//	}
+						//}
 					}
 
 					for(auto& i : interface_area_l){

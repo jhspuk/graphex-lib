@@ -19,8 +19,8 @@ int main() {
 	pn_area m_reg;
 	
 	//m_reg.load("/home/h/Documents/workspace/work/Microsystems/tsetlin-workcraft/alex/tmCompletePetriNetDemo.lpn");
-	m_reg.load("/home/h/Documents/workspace/git/tsetlin-machine-petrinet/components/concepts/arg_max/argmax_complete_demo.lpn");
-	//m_reg.load("pipe_test.lpn");
+	//m_reg.load("/home/h/Documents/workspace/git/tsetlin-machine-petrinet/components/concepts/arg_max/argmax_complete_demo.lpn");
+	m_reg.load("argmax_complete_demo_re_4.lpn");
 
 	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
 	o_p_list<int>(m_reg.gn_reg_func, 0);
@@ -58,7 +58,7 @@ int main() {
 	}
 	*/
 
-	//o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
+	o_p_list<uint8_t>(m_reg.gn_reg_data, 1);
 	//o_p_list<int>(m_reg.gn_reg_func, 0);
 
 	//o_p_list<int>(m_reg.gn_reg_exe, 0);

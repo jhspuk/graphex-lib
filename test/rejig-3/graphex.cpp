@@ -209,13 +209,54 @@ namespace graphex{
 		inline e_r o_i_update(gn_base* a){
 
 			using namespace std;
+			using T_link = gn_data<gn_area_link*>*;
 
 			e_r res_l = e_r::SUCCESS;
 
+			vector<gn_base*> out_list;
+			vector<gn_base*> link_list;
+			vector<gn_area*> area_comp_list;
+
 			for(auto& i : a->con){
-				if(i.second == e_sl::list_up){
-					o_link(((gn_data<gn_area*>*)i.first)->data->gn_reg_exe, a, e_sl::list_down, e_sl::nc);
+				if(i.second == e_sl::output){
+					out_list.push_back(i.first);
+				}else if(i.second == e_sl::list_up){
+					for(auto&k : ((gn_data<gn_area*>*)i.first)->data->gn_k_rack->con){
+						if(k.second == e_sl::k_rack_exe){
+							link_list.push_back(k.first);
+							for(auto& j : k.first->con){
+								if(j.second == e_sl::k_rack_exe){
+									area_comp_list.push_back(((gn_data<gn_area*>*)j.first)->data);
+								}
+							}
+						}
+					}
 				}
+			}
+
+			bool change_l = 0;
+
+			for(auto& i : link_list){
+				T_link link_l = (T_link)i;
+				link_l->data->link_lock.lock();
+				change_l = 0;
+
+				for(auto& k : out_list){
+					for(auto& j : k->con){
+						if(j.second == e_sl::list_up){
+							change_l = 1;
+							for(auto& v : area_comp_list){
+								if(((gn_data<gn_area*>*)j.first)->data == v){
+									o_link(i,k,e_sl::list_down,e_sl::nc);
+								}
+							}
+						}
+					}
+				}
+
+				link_l->data->change = change_l;
+
+				link_l->data->link_lock.unlock();
 			}
 			
 			return res_l;
@@ -471,21 +512,21 @@ namespace graphex{
 
 				//if there has been change, add all implicated transitions (pre calculated) from link
 				//into exe buffer
-				//for(auto& i : gn_k_rack->con){
-				//	if(i.second == e_sl::k_rack_int){
-				//		auto area_link_l = ((gn_data<gn_area_link*>*)i.first)->data;
-				//		if(area_link_l->change == 1){
-				//			for(auto& j : area_link_l->gn_reg_func->con){
-				//				if(j.second == e_sl::list_down){
-				//					reg_exe_buffer.push_back({j.first, j.second});
-				//				}
-				//			}	
-				//		}
-				//		area_link_l->link_lock.lock();
-				//		area_link_l->change = 0;
-				//		area_link_l->link_lock.unlock();
-				//	}
-				//}
+				for(auto& i : gn_k_rack->con){
+					if(i.second == e_sl::k_rack_int){
+						auto area_link_l = ((gn_data<gn_area_link*>*)i.first)->data;
+						area_link_l->link_lock.lock();
+						if(area_link_l->change == 1){
+							for(auto& j : area_link_l->gn_reg_func->con){
+								if(j.second == e_sl::list_down){
+									reg_exe_buffer.push_back({j.first, j.second});
+								}
+							}	
+						}
+						area_link_l->change = 0;
+						area_link_l->link_lock.unlock();
+					}
+				}
 
 				//if there is nothing in the buffer to be processed, quit immediately
 				if(reg_exe_buffer.size()==0){

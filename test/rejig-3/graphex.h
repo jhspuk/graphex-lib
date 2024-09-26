@@ -189,7 +189,24 @@ namespace graphex{
 		}
 
 		e_r o_s_name(gn_base* a, std::string& name);
-		
+
+		e_r o_sr_index(gn_base* a, size_t b, gn_base* r){
+			
+			using namespace std;
+
+			e_r res_l = e_r::SUCCESS;
+
+			if(b > a->con.size()){
+				res_l = e_r::FAILURE;
+				return res_l;
+			}
+
+			r = a->con[b].first;
+
+			return res_l;
+
+		}
+
 		//operation print list: Print entire list of nodes, including names	
 		template <class T>
 		e_r o_p_list(gn_base* a, bool is_data){
@@ -275,6 +292,9 @@ namespace graphex{
 			gn_area_link(){
 				gn_reg_func->data = this;
 			}
+			~gn_area_link(){
+				o_delete(gn_reg_func);
+			}
 		};
 
 	//	class gn_interface : public gn_area{
@@ -292,6 +312,8 @@ namespace graphex{
 
 				gn_data<controller*> reg_area;
 				gn_data<controller*> reg_interface;
+
+				gn_data<controller*> reg_link;
 
 				size_t add_rack(gn_area*);
 

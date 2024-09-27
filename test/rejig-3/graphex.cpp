@@ -206,6 +206,23 @@ namespace graphex{
 
 		}
 
+		e_r o_sr_index(gn_base* a, size_t b, gn_base*& r){
+			
+			using namespace std;
+
+			e_r res_l = e_r::SUCCESS;
+
+			if(b > a->con.size()){
+				res_l = e_r::FAILURE;
+				return res_l;
+			}
+
+			r = a->con[b].first;
+
+			return res_l;
+
+		}
+
 		inline e_r o_i_update(gn_base* a){
 
 			using namespace std;
@@ -307,6 +324,26 @@ namespace graphex{
 
 
 	//	}
+	//
+	
+		controller::controller(){
+			reg_area = new gn_data<controller*>;
+			reg_area->data = this;
+			reg_interface = new gn_data<controller*>;
+			reg_interface->data = this;
+			reg_link = new gn_data<controller*>;
+			reg_link->data = this;
+			reg_search = new gn_data<controller*>;
+			reg_search->data = this;
+
+		}
+
+		controller::~controller(){
+			o_delete(reg_area);
+			o_delete(reg_interface);
+			o_delete(reg_link);
+			o_delete(reg_search);
+		}
 
 		//GN INTERFACE CLASS END---
 		namespace conv_petrinet{
